@@ -1,0 +1,37 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@functions/*": [
+        "src/functions/*"
+      ],
+      "@libs/*": [
+        "src/libs/*"
+      ],
+      "@models/*": [
+        "src/models/*"
+      ],
+      "@services/*": [
+        "src/services/*"
+      ],
+      "@utils/*": [
+        "src/utils/*"
+      ],
+      "@constants/*": [
+        "src/constants/*"
+      ],
+      "@enums/*": [
+        "src/enums/*"
+      ],
+      "@exceptions/*": [
+        "src/exceptions/*"
+      ],
+      "@decorators/*": [
+        "src/commons/decorators/*"
+      ],
+      "@commons/*": [
+        "src/commons/*"
+      ]
+    }
+  }
+}

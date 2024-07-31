@@ -1,0 +1,14 @@
+const COMMON_ERROR_CODE = {
+  REQUIRE: { code: 'ERROR1_01', msg: 'Required' },
+  IS_NUMBER: { code: 'ERROR1_30', msg: 'Number required' },
+  INVALID: { code: 'ERROR1_100', msg: 'Invalid data' },
+  ERROR_SERVER: { code: 'ERROR2_001', msg: 'Server error' },
+};
+
+const ERROR_CODE = {
+  LAMBDA: {
+    LAMBDA_INVOKE_ERROR: { code: 'ERROR2_001' },
+  },
+};
+
+export { ERROR_CODE, COMMON_ERROR_CODE };

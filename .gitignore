@@ -1,0 +1,18 @@
+# package directories
+node_modules
+jspm_packages
+.dynamodb/
+.idea/*
+# Serverless directories
+.serverless
+
+# esbuild directories
+.esbuild
+.env
+.env.*
+!.env.sample
+env/*
+docker/*
+test.js
+scripts/update-env.*.sh
+package-lock.json
