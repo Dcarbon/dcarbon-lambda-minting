@@ -21,7 +21,7 @@ class Logger {
 
   process(message: any) {
     // eslint-disable-next-line no-console
-    console.info('[PROCESSING...]', message);
+    console.info('[PROCESSING]', message);
   }
 
   success(message: any) {

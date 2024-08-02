@@ -14,4 +14,4 @@ class CommonHandler {
   }
 }
 
-export const healthHdl = middyfy(CommonHandler.health);
+export const HealthFn = middyfy(CommonHandler.health);

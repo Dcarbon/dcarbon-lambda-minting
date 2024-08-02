@@ -9,6 +9,9 @@ const ERROR_CODE = {
   LAMBDA: {
     LAMBDA_INVOKE_ERROR: { code: 'ERROR2_001' },
   },
+  MINTING: {
+    MINTER_KEYPAIR_NOT_FOUND: { code: 'ERROR3_001', msg: 'Minter keypair not found' },
+  },
 };
 
 export { ERROR_CODE, COMMON_ERROR_CODE };

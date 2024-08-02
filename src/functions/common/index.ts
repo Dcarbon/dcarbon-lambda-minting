@@ -3,12 +3,14 @@ import { API_VERSION } from '@constants/common.constant';
 
 const PREFIX = `${API_VERSION}/common`;
 export const health = {
-  handler: `${handlerPath(__dirname)}/handler.healthHdl`,
+  handler: `${handlerPath(__dirname)}/handler.HealthFn`,
   events: [
     {
       httpApi: {
         method: 'get',
         path: `${PREFIX}/health`,
+        summary: 'Check health service',
+        swaggerTags: ['COMMON'],
       },
     },
   ],

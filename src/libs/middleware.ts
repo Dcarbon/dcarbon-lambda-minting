@@ -25,7 +25,7 @@ export const responseHttpCode = () => {
               statusCode: EHttpStatus.InternalServerError,
               body: JSON.stringify({
                 request_id: request_id,
-                error: { code: COMMON_ERROR_CODE.ERROR_SERVER.code },
+                error: { code: COMMON_ERROR_CODE.ERROR_SERVER.code, msg: COMMON_ERROR_CODE.ERROR_SERVER.msg },
               }),
               headers: { 'content-type': 'application/json; charset=utf-8' },
             };
