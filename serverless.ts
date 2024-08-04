@@ -17,6 +17,12 @@ const serverlessConfiguration: AWS = {
       shouldStartNameWithService: true,
       binaryMediaTypes: ['*/*'],
     },
+    httpApi: {
+      cors: {
+        allowCredentials: true, // @ts-ignore
+        allowedOrigins: '${file(./env/env.${opt:stage, "dev"}.json):COMMON_CORS_ORIGIN}', // @ts-ignore
+      },
+    },
     environment: {
       AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1',
       NODE_OPTIONS: '--enable-source-maps --stack-trace-limit=1000',

@@ -13,6 +13,7 @@ class MintingHandler {
       _request.body.device_id,
       _request.body.amount,
       _request.body.nonce,
+      _request.body.mint_time,
     );
     return CommonJsonResponse<any>({
       request_id: context.awsRequestId,

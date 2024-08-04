@@ -11,7 +11,7 @@ import HistoryService from '@services/history';
 import { EDeviceCreditActionType } from '@enums/device.enum';
 
 class MintingService {
-  async minting(projectId: string, deviceId: string, amount: number, nonce: number = 1): Promise<any> {
+  async minting(projectId: string, deviceId: string, amount: number, nonce: number, mint_time: number): Promise<any> {
     const deviceSetting = await SolanaService.getDeviceSetting(projectId, deviceId);
     if (!deviceSetting.is_active || !deviceSetting.device_id) {
       LoggerUtil.info(`Device [${deviceId}] of project [${projectId}] inactive`);
@@ -50,7 +50,7 @@ class MintingService {
         amount,
         deviceSetting.owner,
       );
-      await this.syncMintTransaction(connection, signature);
+      await this.syncMintTransaction(connection, signature, mint_time, false);
     }
     return deviceSetting;
   }
@@ -66,7 +66,12 @@ class MintingService {
     return Keypair.fromSecretKey(bs58.decode(secret));
   }
 
-  async syncMintTransaction(connection: Connection, signature: string, throwError = true): Promise<any> {
+  async syncMintTransaction(
+    connection: Connection,
+    signature: string,
+    mintTime: number,
+    throwError = true,
+  ): Promise<any> {
     try {
       const data = await connection.getParsedTransaction(signature, {
         commitment: 'confirmed',
@@ -91,7 +96,8 @@ class MintingService {
           fee: Number(arr[4]),
           dcarbon_amount: Number(arr[5]),
           created_by: 'None',
-          tx_time: data.blockTime ? new Date(data.blockTime) : null,
+          // tx_time: data.blockTime ? new Date(data.blockTime) : null,
+          tx_time: new Date(mintTime), //FIXME: test only
         });
       }
     } catch (e) {

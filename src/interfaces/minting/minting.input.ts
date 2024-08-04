@@ -6,6 +6,7 @@ interface IMintingInput extends ICommonRequest {
     device_id: string;
     project_id: string;
     nonce: number;
+    mint_time: number;
   };
 }
 
