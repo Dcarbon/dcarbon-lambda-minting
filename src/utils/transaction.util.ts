@@ -1,4 +1,3 @@
-import fs from 'fs';
 import {
   Connection,
   Keypair,
@@ -83,7 +82,6 @@ const sendTx = async ({
       await waitToConfirm();
 
       const sigStatus = await connection.getSignatureStatus(sig);
-      fs.writeFileSync('sig', JSON.stringify(sigStatus), 'utf8');
 
       if (sigStatus.value?.err) {
         if (String(process.env.COMMON_SKIP_PREFLIGHT) === '1') {

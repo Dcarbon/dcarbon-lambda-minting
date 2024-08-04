@@ -21,6 +21,7 @@ const serverlessConfiguration: AWS = {
       cors: {
         allowCredentials: true, // @ts-ignore
         allowedOrigins: '${file(./env/env.${opt:stage, "dev"}.json):COMMON_CORS_ORIGIN}', // @ts-ignore
+        allowedHeaders: '${file(./env/env.${opt:stage, "dev"}.json):COMMON_CORS_HEADER}', // @ts-ignore
       },
     },
     environment: {
