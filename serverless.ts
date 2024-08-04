@@ -24,7 +24,6 @@ const serverlessConfiguration: AWS = {
       STAGE: '${opt:stage}',
       MODE: '${file(./env/env.${opt:stage, "dev"}.json):MODE}',
       ENDPOINT_API: '${file(./env/env.${opt:stage, "dev"}.json):ENDPOINT_API}',
-      ENDPOINT_RPC: '${file(./env/env.${opt:stage, "dev"}.json):ENDPOINT_RPC}',
       CONTRACT_CARBON_PROGRAM_ID: '${file(./env/env.${opt:stage, "dev"}.json):CONTRACT_CARBON_PROGRAM_ID}',
       AWS_S3_BUCKET_NAME: '${file(./env/env.${opt:stage, "dev"}.json):AWS_S3_BUCKET_NAME}',
       AWS_S3_BUCKET_URL: '${file(./env/env.${opt:stage, "dev"}.json):AWS_S3_BUCKET_URL}',
@@ -34,6 +33,12 @@ const serverlessConfiguration: AWS = {
         '${file(./env/env.${opt:stage, "dev"}.json):EIP_712_DOMAIN_VERIFYING_CONTRACT}',
       EIP_712_ETH_ADDRESS: '${file(./env/env.${opt:stage, "dev"}.json):EIP_712_ETH_ADDRESS}',
       COMMON_SKIP_PREFLIGHT: '${file(./env/env.${opt:stage, "dev"}.json):COMMON_SKIP_PREFLIGHT}',
+      //SSM
+      ENDPOINT_RPC: '${ssm:/dcarbon/${opt:stage, "dev"}/admin-backend/endpoint/endpoint_rpc}',
+      POSTGRES_DB_HOST: '${ssm:/dcarbon/${opt:stage, "dev"}/admin-backend/postgres/postgres_db_host}',
+      POSTGRES_DB_NAME: '${ssm:/dcarbon/${opt:stage, "dev"}/admin-backend/postgres/postgres_db_name}',
+      POSTGRES_DB_USER: '${ssm:/dcarbon/${opt:stage, "dev"}/admin-backend/postgres/postgres_db_user}',
+      POSTGRES_DB_PASSWORD: '${ssm:/dcarbon/${opt:stage, "dev"}/admin-backend/postgres/postgres_db_password}',
     },
     iam: {
       role: 'arn:aws:iam::${aws:accountId}:role/dcarbon-${opt:stage, "dev"}-lambda-minting-role',

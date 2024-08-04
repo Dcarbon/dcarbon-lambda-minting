@@ -1,3 +1,4 @@
+import fs from 'fs';
 import {
   Connection,
   Keypair,
@@ -68,7 +69,7 @@ const sendTx = async ({
         replaceRecentBlockhash: true,
         commitment: 'confirmed',
       });
-      if (!isShoError && process.env.COMMON_SKIP_PREFLIGHT === '1' && data?.value?.err) {
+      if (!isShoError && String(process.env.COMMON_SKIP_PREFLIGHT) === '1' && data?.value?.err) {
         isShoError = true;
         LoggerUtil.error('SimulateTransaction Error ' + data?.value?.logs);
       }
@@ -82,9 +83,10 @@ const sendTx = async ({
       await waitToConfirm();
 
       const sigStatus = await connection.getSignatureStatus(sig);
+      fs.writeFileSync('sig', JSON.stringify(sigStatus), 'utf8');
 
       if (sigStatus.value?.err) {
-        if (process.env.COMMON_SKIP_PREFLIGHT === '1') {
+        if (String(process.env.COMMON_SKIP_PREFLIGHT) === '1') {
           LoggerUtil.error('GetSignatureStatus Error ' + sigStatus.value?.err);
         }
         throw new Error('UNKNOWN_TRANSACTION');

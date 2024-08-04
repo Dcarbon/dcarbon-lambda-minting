@@ -8,7 +8,12 @@ import { IMintingInput } from '../../interfaces/minting';
 class MintingHandler {
   @RequestLogger()
   static async minting(_request: IMintingInput, context: ILambdaContext): Promise<TCommonAPIGatewayProxyResult<any>> {
-    const data = await MintingService.minting(_request.body.project_id, _request.body.device_id);
+    const data = await MintingService.minting(
+      _request.body.project_id,
+      _request.body.device_id,
+      _request.body.amount,
+      _request.body.nonce,
+    );
     return CommonJsonResponse<any>({
       request_id: context.awsRequestId,
       data,

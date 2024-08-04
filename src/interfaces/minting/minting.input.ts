@@ -2,11 +2,18 @@ import { ICommonRequest } from '../commons';
 
 interface IMintingInput extends ICommonRequest {
   body: {
-    minter: string;
+    amount: number;
     device_id: string;
     project_id: string;
+    nonce: number;
   };
 }
+
+interface IMetadataAttribute {
+  trait_type: string;
+  value: string;
+}
+
 interface ICreateMetadataInput {
   name: string;
 
@@ -15,6 +22,8 @@ interface ICreateMetadataInput {
   description?: string;
 
   image: string;
+
+  attributes?: IMetadataAttribute[];
 }
 
 interface IIotSignatureInput {
@@ -23,4 +32,5 @@ interface IIotSignatureInput {
   nonce: number;
   signed: string;
 }
+
 export { IMintingInput, ICreateMetadataInput, IIotSignatureInput };

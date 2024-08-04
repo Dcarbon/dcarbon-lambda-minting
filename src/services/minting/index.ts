@@ -1,25 +1,43 @@
 import bs58 from 'bs58';
-import { Keypair } from '@solana/web3.js';
+import { Connection, Keypair } from '@solana/web3.js';
 import SecretManagerService from '@services/aws/secret_manager';
 import MyError from '@exceptions/my_error.exception';
 import { EHttpStatus } from '@enums/http.enum';
 import { ERROR_CODE } from '@constants/error.constant';
 import SolanaService from '@services/solana';
 import LoggerUtil from '@utils/logger.util';
+import { IOT_DEVICE_TYPE } from '@constants/iot.constant';
+import HistoryService from '@services/history';
+import { EDeviceCreditActionType } from '@enums/device.enum';
 
 class MintingService {
-  async minting(projectId: string, deviceId: string): Promise<any> {
+  async minting(projectId: string, deviceId: string, amount: number, nonce: number = 1): Promise<any> {
     const deviceSetting = await SolanaService.getDeviceSetting(projectId, deviceId);
     if (!deviceSetting.is_active || !deviceSetting.device_id) {
       LoggerUtil.info(`Device [${deviceId}] of project [${projectId}] inactive`);
     } else {
       const singer = await this.getSignerKeypair(deviceSetting.minter.toString());
-      await SolanaService.mintSNFT(
+      const deviceType = IOT_DEVICE_TYPE.find((type) => type.id === deviceSetting.device_type);
+      const { signature, connection } = await SolanaService.mintSNFT(
         singer,
         {
-          name: `Carbon IOT${deviceId}`,
-          symbol: `C${deviceId}`,
+          name: `Carbon ${deviceId}-${nonce}`,
+          symbol: `C${deviceId}-${nonce}`,
           image: `${process.env.AWS_S3_BUCKET_URL}/public/metadata/token/default_icon.png`,
+          attributes: [
+            {
+              trait_type: 'Project',
+              value: `Project ${projectId}`,
+            },
+            {
+              trait_type: 'Device',
+              value: `IOT ${deviceId}`,
+            },
+            {
+              trait_type: 'Type',
+              value: deviceType ? deviceType.name : IOT_DEVICE_TYPE[1].name,
+            },
+          ],
         },
         {
           iot: '0x4d0155c687739bce9440ffb8aba911b00b21ea56',
@@ -29,8 +47,10 @@ class MintingService {
         },
         projectId,
         deviceId,
+        amount,
         deviceSetting.owner,
       );
+      await this.syncMintTransaction(connection, signature);
     }
     return deviceSetting;
   }
@@ -44,6 +64,40 @@ class MintingService {
         ERROR_CODE.MINTING.MINTER_KEYPAIR_NOT_FOUND.msg,
       );
     return Keypair.fromSecretKey(bs58.decode(secret));
+  }
+
+  async syncMintTransaction(connection: Connection, signature: string, throwError = true): Promise<any> {
+    try {
+      const data = await connection.getParsedTransaction(signature, {
+        commitment: 'confirmed',
+        maxSupportedTransactionVersion: 0,
+      });
+      if (!data) return;
+      const mintInfo = data?.meta?.logMessages?.find((log) => log.indexOf('Program log: mintinfo_') !== -1);
+      const mint =
+        data?.meta?.postTokenBalances && data?.meta?.postTokenBalances.length > 0
+          ? data?.meta?.postTokenBalances[0].mint
+          : undefined;
+      if (mintInfo && mint) {
+        const arr = mintInfo.replace('Program log: mintinfo_', '').split('_');
+        await HistoryService.createDeviceTxHistory({
+          mint,
+          signature,
+          project_id: arr[0],
+          device_id: arr[1],
+          action_type: EDeviceCreditActionType.MINTED,
+          nonce: arr[2],
+          carbon_amount: Number(arr[3]),
+          fee: Number(arr[4]),
+          dcarbon_amount: Number(arr[5]),
+          created_by: 'None',
+          tx_time: data.blockTime ? new Date(data.blockTime) : null,
+        });
+      }
+    } catch (e) {
+      if (throwError) throw e;
+      LoggerUtil.error('Cannot sync mint transaction: ' + e.stack);
+    }
   }
 }
 

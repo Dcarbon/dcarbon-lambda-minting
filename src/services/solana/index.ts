@@ -85,8 +85,10 @@ class SolanaService {
     signatureInput: IIotSignatureInput,
     projectId: string,
     deviceId: string,
+    amount: number,
     owner: PublicKey,
-  ): Promise<void> {
+  ): Promise<{ connection: Connection; signature: string }> {
+    LoggerUtil.info('Minting SNFT with metadata: ' + JSON.stringify(input));
     const minterBalance = await this.connection.getBalance(minter.publicKey);
     LoggerUtil.info(`Minter balance: ${minterBalance}`);
     const uri = await this.generateMetadata(input);
@@ -114,7 +116,7 @@ class SolanaService {
     const mintArgs: MintArgsArgs = {
       __kind: 'V1',
       // amount: signature.amount * 10 ** decimals, //FIXME:
-      amount: 5 * 10 ** decimals,
+      amount: amount * 10 ** decimals,
       authorizationData: null,
     };
 
@@ -162,18 +164,6 @@ class SolanaService {
         ataProgram: ASSOCIATED_PROGRAM_ID,
       })
       .instruction();
-    // const tx = new Transaction().add(ins1);
-    // console.log('1', this.connection);
-    // const sig = await web3.sendAndConfirmTransaction(this.connection, tx, [minter, mint], { skipPreflight: true });
-    // console.log(sig);
-    // await delay(5000);
-    // const sigStatus = await this.connection.getSignatureStatus(sig);
-    // if (sigStatus.value?.err) {
-    //   if (process.env.COMMON_SKIP_PREFLIGHT === '1') {
-    //     LoggerUtil.error('GetSignatureStatus Error ' + sigStatus.value?.err);
-    //   }
-    //   throw new Error('UNKNOWN_TRANSACTION');
-    // }
     const { tx, status } = await sendTx({
       connection: this.connection,
       signers: [minter, mint],
@@ -183,6 +173,10 @@ class SolanaService {
     if (status === 'error') {
       throw new Error(tx);
     }
+    return {
+      connection: this.connection,
+      signature: tx,
+    };
   }
 
   async createSignatureVerifyInfo(signatureInput: IIotSignatureInput): Promise<SignatureVerifyInfo> {
