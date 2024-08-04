@@ -122,5 +122,5 @@
     }
   },
   "securityDefinitions": {},
-  "host": "localhost:8086"
+  "host": "j1c6jvbgbh.execute-api.ap-southeast-1.amazonaws.com"
 };

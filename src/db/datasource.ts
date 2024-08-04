@@ -17,15 +17,15 @@ class DatasourceManager {
       database: process.env.POSTGRES_DB_NAME,
       entities: [DeviceTransactionHistoryEntity],
     });
-    await AppDataSource.initialize()
-      .then(() => {
-        LoggerUtil.success('Data Source has been initialized!');
-      })
-      .catch((err) => {
-        LoggerUtil.error('Error during Data Source initialization: ' + err.message);
-      });
-    this.manager = AppDataSource.manager;
-    return this.manager;
+    try {
+      await AppDataSource.initialize();
+      this.manager = AppDataSource.manager;
+      LoggerUtil.success('Data Source has been initialized!');
+      return this.manager;
+    } catch (e) {
+      LoggerUtil.error('Error during Data Source initialization: ' + e.message);
+      throw e;
+    }
   }
 }
 
