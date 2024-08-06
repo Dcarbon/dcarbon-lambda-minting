@@ -75,7 +75,7 @@ const sendTx = async ({
 
       // @ts-ignore
       const sig = await web3.sendAndConfirmTransaction(connection, transactionV0, undefined, {
-        skipPreflight: true,
+        skipPreflight: String(process.env.COMMON_SKIP_PREFLIGHT) === '1',
         maxRetries: 0,
         preflightCommitment: 'confirmed',
       });

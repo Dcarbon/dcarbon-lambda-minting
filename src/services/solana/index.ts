@@ -86,6 +86,7 @@ class SolanaService {
     projectId: string,
     deviceId: string,
     amount: number,
+    nonce: number,
     owner: PublicKey,
   ): Promise<{ connection: Connection; signature: string }> {
     LoggerUtil.info('Minting SNFT with metadata: ' + JSON.stringify(input));
@@ -133,6 +134,7 @@ class SolanaService {
       deviceId: Number(deviceId),
       createMintDataVec: Buffer.from(data1),
       mintDataVec: Buffer.from(data),
+      nonce: Number(nonce),
     };
 
     const verifyInfo = await this.createSignatureVerifyInfo(signatureInput);

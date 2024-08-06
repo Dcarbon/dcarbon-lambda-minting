@@ -59,6 +59,7 @@ class MintingService {
         projectId,
         deviceId,
         amount,
+        nonce,
         deviceSetting.owner,
       );
       await this.syncMintTransaction(connection, signature, mint_time, false);
