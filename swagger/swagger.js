@@ -59,6 +59,38 @@
           }
         }
       }
+    },
+    "/v1/minting/trigger": {
+      "post": {
+        "summary": "Trigger Minting Carbon",
+        "description": "",
+        "tags": [
+          "MINTING"
+        ],
+        "operationId": "triggerMinting.post./v1/minting/trigger",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Body required in the request",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ITriggerMintingBody"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200 response"
+          }
+        }
+      }
     }
   },
   "definitions": {
@@ -119,8 +151,25 @@
       "additionalProperties": false,
       "title": "IMintingBody",
       "type": "object"
+    },
+    "ITriggerMintingBody": {
+      "properties": {
+        "minting_schedule": {
+          "$ref": "#/definitions/TMintScheduleType",
+          "title": "ITriggerMintingBody.minting_schedule"
+        }
+      },
+      "required": [
+        "minting_schedule"
+      ],
+      "additionalProperties": false,
+      "title": "ITriggerMintingBody",
+      "type": "object"
+    },
+    "TMintScheduleType": {
+      "title": "TMintScheduleType"
     }
   },
   "securityDefinitions": {},
-  "host": "j1c6jvbgbh.execute-api.ap-southeast-1.amazonaws.com"
+  "host": "localhost:8086"
 };

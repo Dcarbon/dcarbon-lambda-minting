@@ -3,7 +3,7 @@ import { ILambdaContext } from '@models/commons/ICommon.interface';
 import { CommonJsonResponse, TCommonAPIGatewayProxyResult } from '@libs/api-gateway';
 import MintingService from '@services/minting';
 import RequestLogger from '../../commons/decorators/RequestLogger.decorator';
-import { IMintingInput } from '../../interfaces/minting';
+import { IMintingInput, ITriggerMintingInput } from '../../interfaces/minting';
 
 class MintingHandler {
   @RequestLogger()
@@ -20,6 +20,18 @@ class MintingHandler {
       data,
     });
   }
+
+  @RequestLogger()
+  static async triggerMinting(
+    request: ITriggerMintingInput,
+    context: ILambdaContext,
+  ): Promise<TCommonAPIGatewayProxyResult<any>> {
+    await MintingService.triggerMinting(request.body.minting_schedule);
+    return CommonJsonResponse<any>({
+      request_id: context.awsRequestId,
+    });
+  }
 }
 
 export const MintingFn = middyfy(MintingHandler.minting);
+export const TriggerMintingFn = middyfy(MintingHandler.triggerMinting);

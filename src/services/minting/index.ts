@@ -9,8 +9,19 @@ import LoggerUtil from '@utils/logger.util';
 import { IOT_DEVICE_TYPE } from '@constants/iot.constant';
 import HistoryService from '@services/history';
 import { EDeviceCreditActionType } from '@enums/device.enum';
+import { EMintScheduleType } from '@enums/minting.enum';
+import ConfigService from '@services/config';
 
 class MintingService {
+  async triggerMinting(scheduleType: EMintScheduleType): Promise<void> {
+    LoggerUtil.process(`Trigger minting [${scheduleType.toUpperCase()}]`);
+    const schedules = await ConfigService.getMintingSchedule({ schedule_type: scheduleType });
+    if (schedules.length > 0) {
+      LoggerUtil.info(`Project minting: ${JSON.stringify(schedules.map((info) => info.project_id))}`);
+    }
+    LoggerUtil.success(`Trigger minting [${scheduleType.toUpperCase()}]`);
+  }
+
   async minting(projectId: string, deviceId: string, amount: number, nonce: number, mint_time: number): Promise<any> {
     const deviceSetting = await SolanaService.getDeviceSetting(projectId, deviceId);
     if (!deviceSetting.is_active || !deviceSetting.device_id) {
@@ -96,7 +107,7 @@ class MintingService {
           fee: Number(arr[4]),
           dcarbon_amount: Number(arr[5]),
           created_by: 'None',
-          // tx_time: data.blockTime ? new Date(data.blockTime) : null,
+          // tx_time: data.blockTime ? new Date(data.blockTime * 1000) : null,
           tx_time: new Date(mintTime), //FIXME: test only
         });
       }

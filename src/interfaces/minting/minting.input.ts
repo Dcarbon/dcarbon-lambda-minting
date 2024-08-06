@@ -1,3 +1,4 @@
+import { EMintScheduleType } from '@enums/minting.enum';
 import { ICommonRequest } from '../commons';
 
 interface IMintingInput extends ICommonRequest {
@@ -7,6 +8,12 @@ interface IMintingInput extends ICommonRequest {
     project_id: string;
     nonce: number;
     mint_time: number;
+  };
+}
+
+interface ITriggerMintingInput extends ICommonRequest {
+  body: {
+    minting_schedule: EMintScheduleType;
   };
 }
 
@@ -34,4 +41,4 @@ interface IIotSignatureInput {
   signed: string;
 }
 
-export { IMintingInput, ICreateMetadataInput, IIotSignatureInput };
+export { IMintingInput, ICreateMetadataInput, IIotSignatureInput, ITriggerMintingInput };

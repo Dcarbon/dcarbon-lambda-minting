@@ -16,3 +16,17 @@ export const minting = {
     },
   ],
 };
+export const triggerMinting = {
+  handler: `${handlerPath(__dirname)}/handler.TriggerMintingFn`,
+  events: [
+    {
+      httpApi: {
+        method: 'post',
+        path: `${PREFIX}/trigger`,
+        summary: 'Trigger Minting Carbon',
+        swaggerTags: ['MINTING'],
+        bodyType: 'ITriggerMintingBody',
+      },
+    },
+  ],
+};

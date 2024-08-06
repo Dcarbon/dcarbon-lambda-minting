@@ -1,5 +1,5 @@
 import { health } from '@functions/common';
-import { minting } from '@functions/minting';
+import { minting, triggerMinting } from '@functions/minting';
 import type { AWS } from '@serverless/typescript';
 
 const serverlessConfiguration: AWS = {
@@ -54,6 +54,7 @@ const serverlessConfiguration: AWS = {
   functions: {
     health,
     minting,
+    triggerMinting,
   },
   package: { individually: true },
   custom: {
