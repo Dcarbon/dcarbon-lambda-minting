@@ -432,6 +432,17 @@ export type ICarbonContract = {
           };
         },
         {
+          name: 'contractConfig';
+          pda: {
+            seeds: [
+              {
+                kind: 'const';
+                value: [99, 111, 110, 116, 114, 97, 99, 116, 95, 99, 111, 110, 102, 105, 103];
+              },
+            ];
+          };
+        },
+        {
           name: 'claim';
           writable: true;
           pda: {
@@ -734,7 +745,7 @@ export type ICarbonContract = {
       args: [
         {
           name: 'key';
-          type: 'pubkey';
+          type: 'string';
         },
         {
           name: 'value';
@@ -782,7 +793,7 @@ export type ICarbonContract = {
       args: [
         {
           name: 'mintingFee';
-          type: 'u64';
+          type: 'f64';
         },
       ];
     },
@@ -874,7 +885,7 @@ export type ICarbonContract = {
       args: [
         {
           name: 'rate';
-          type: 'u64';
+          type: 'f64';
         },
       ];
     },
@@ -1117,7 +1128,7 @@ export type ICarbonContract = {
         fields: [
           {
             name: 'key';
-            type: 'pubkey';
+            type: 'string';
           },
           {
             name: 'value';
@@ -1133,11 +1144,11 @@ export type ICarbonContract = {
         fields: [
           {
             name: 'mintingFee';
-            type: 'u64';
+            type: 'f64';
           },
           {
             name: 'rate';
-            type: 'u64';
+            type: 'f64';
           },
           {
             name: 'governanceAmount';
@@ -1153,11 +1164,11 @@ export type ICarbonContract = {
         fields: [
           {
             name: 'rate';
-            type: 'u64';
+            type: 'f64';
           },
           {
             name: 'mintingFee';
-            type: 'u64';
+            type: 'f64';
           },
           {
             name: 'mint';
@@ -1360,8 +1371,8 @@ export type ICarbonContract = {
             type: 'bytes';
           },
           {
-            name: 'mintDataVec';
-            type: 'bytes';
+            name: 'totalAmount';
+            type: 'u64';
           },
         ];
       };

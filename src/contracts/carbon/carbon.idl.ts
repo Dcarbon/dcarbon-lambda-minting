@@ -435,6 +435,17 @@ export const CARBON_IDL = {
           },
         },
         {
+          name: 'contract_config',
+          pda: {
+            seeds: [
+              {
+                kind: 'const',
+                value: [99, 111, 110, 116, 114, 97, 99, 116, 95, 99, 111, 110, 102, 105, 103],
+              },
+            ],
+          },
+        },
+        {
           name: 'claim',
           writable: true,
           pda: {
@@ -737,7 +748,7 @@ export const CARBON_IDL = {
       args: [
         {
           name: 'key',
-          type: 'pubkey',
+          type: 'string',
         },
         {
           name: 'value',
@@ -785,7 +796,7 @@ export const CARBON_IDL = {
       args: [
         {
           name: 'minting_fee',
-          type: 'u64',
+          type: 'f64',
         },
       ],
     },
@@ -877,7 +888,7 @@ export const CARBON_IDL = {
       args: [
         {
           name: 'rate',
-          type: 'u64',
+          type: 'f64',
         },
       ],
     },
@@ -1120,7 +1131,7 @@ export const CARBON_IDL = {
         fields: [
           {
             name: 'key',
-            type: 'pubkey',
+            type: 'string',
           },
           {
             name: 'value',
@@ -1136,11 +1147,11 @@ export const CARBON_IDL = {
         fields: [
           {
             name: 'minting_fee',
-            type: 'u64',
+            type: 'f64',
           },
           {
             name: 'rate',
-            type: 'u64',
+            type: 'f64',
           },
           {
             name: 'governance_amount',
@@ -1156,11 +1167,11 @@ export const CARBON_IDL = {
         fields: [
           {
             name: 'rate',
-            type: 'u64',
+            type: 'f64',
           },
           {
             name: 'minting_fee',
-            type: 'u64',
+            type: 'f64',
           },
           {
             name: 'mint',
@@ -1363,8 +1374,8 @@ export const CARBON_IDL = {
             type: 'bytes',
           },
           {
-            name: 'mint_data_vec',
-            type: 'bytes',
+            name: 'total_amount',
+            type: 'u64',
           },
         ],
       },
