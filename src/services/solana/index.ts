@@ -3,8 +3,6 @@ import { BN, IdlTypes, Program, web3 } from '@coral-xyz/anchor';
 import {
   CreateArgsArgs,
   getCreateArgsSerializer,
-  getMintArgsSerializer,
-  MintArgsArgs,
   MPL_TOKEN_METADATA_PROGRAM_ID,
   TokenStandard,
 } from '@metaplex-foundation/mpl-token-metadata';
@@ -114,26 +112,16 @@ class SolanaService {
     const serialize1 = getCreateArgsSerializer();
     const data1 = serialize1.serialize(createArgsVec);
 
-    const mintArgs: MintArgsArgs = {
-      __kind: 'V1',
-      // amount: signature.amount * 10 ** decimals, //FIXME:
-      amount: amount * 10 ** decimals,
-      authorizationData: null,
-    };
-
     const ownerAta = associatedAddress({
       mint: mint.publicKey,
       owner: owner,
     });
 
-    const serialize = getMintArgsSerializer();
-    const data = serialize.serialize(mintArgs);
-
     const mintSftArgs: MintSftArgs = {
       projectId: Number(projectId),
       deviceId: Number(deviceId),
       createMintDataVec: Buffer.from(data1),
-      mintDataVec: Buffer.from(data),
+      totalAmount: new BN(amount), // FIXME: hardcode
       nonce: Number(nonce),
     };
 
