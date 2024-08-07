@@ -466,25 +466,6 @@ export const CARBON_IDL = {
           writable: true,
         },
         {
-          name: 'device',
-          pda: {
-            seeds: [
-              {
-                kind: 'const',
-                value: [100, 101, 118, 105, 99, 101],
-              },
-              {
-                kind: 'arg',
-                path: 'mint_sft_args.project_id',
-              },
-              {
-                kind: 'arg',
-                path: 'mint_sft_args.device_id',
-              },
-            ],
-          },
-        },
-        {
           name: 'device_status',
           writable: true,
           pda: {
