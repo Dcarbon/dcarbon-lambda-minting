@@ -121,7 +121,7 @@ class SolanaService {
       projectId: Number(projectId),
       deviceId: Number(deviceId),
       createMintDataVec: Buffer.from(data1),
-      totalAmount: new BN(amount * 10 ** decimals), // FIXME: hardcode
+      totalAmount: amount, // FIXME: hardcode
       nonce: Number(nonce),
     };
 
