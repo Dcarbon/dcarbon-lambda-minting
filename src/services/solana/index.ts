@@ -1,4 +1,4 @@
-import { Connection, Keypair, PublicKey } from '@solana/web3.js';
+import { AddressLookupTableProgram, Connection, Keypair, PublicKey } from '@solana/web3.js';
 import { BN, IdlTypes, Program, web3 } from '@coral-xyz/anchor';
 import {
   CreateArgsArgs,
@@ -12,7 +12,7 @@ import { ethers } from 'ethers';
 import VerifyUtil from '@utils/verify.util';
 import LoggerUtil from '@utils/logger.util';
 import S3Service from '@services/aws/s3';
-import { sendTx } from '@utils/transaction.util';
+import { sendTx, u16ToBytes } from '@utils/transaction.util';
 import { ICarbonContract } from '../../contracts/carbon/carbon.interface';
 import { CARBON_IDL } from '../../contracts/carbon/carbon.idl';
 import {
@@ -78,6 +78,7 @@ class SolanaService {
   }
 
   async mintSNFT(
+    lookupTable: string,
     minter: Keypair,
     input: ICreateMetadataInput,
     signatureInput: IIotSignatureInput,
@@ -134,6 +135,10 @@ class SolanaService {
       sig: Array.from(verifyInfo.signature),
       ethAddress: Array.from(ethAddress),
     };
+    const [device] = PublicKey.findProgramAddressSync(
+      [Buffer.from('device'), Buffer.from(u16ToBytes(Number(projectId))), Buffer.from(u16ToBytes(Number(deviceId)))],
+      this.program.programId,
+    );
     const ins0 = web3.Secp256k1Program.createInstructionWithEthAddress({
       ethAddress: ethAddress,
       message: verifyInfo.message,
@@ -153,12 +158,21 @@ class SolanaService {
         tokenMetadataProgram: this.TOKEN_METADATA_PROGRAM_ID,
         ataProgram: ASSOCIATED_PROGRAM_ID,
       })
+      .remainingAccounts([
+        {
+          pubkey: device,
+          isSigner: false,
+          isWritable: false,
+        },
+      ])
       .instruction();
+    const lookupTableAccount = (await this.connection.getAddressLookupTable(new PublicKey(lookupTable))).value;
     const { tx, status } = await sendTx({
       connection: this.connection,
       signers: [minter, mint],
       arrTxInstructions: [ins0, ins1],
       payerKey: minter.publicKey,
+      lookupTableAccount: lookupTableAccount,
     });
     if (status === 'error') {
       throw new Error(tx);
@@ -210,6 +224,31 @@ class SolanaService {
     } catch (e) {
       LoggerUtil.error(`Cannot create verify signature info, ${e.stack}`);
       throw e;
+    }
+  }
+
+  async createMintLookUpTable(signer: Keypair): Promise<void> {
+    const slot = await this.connection.getSlot();
+    const [createLookupTableIns, lookupTableAddress] = AddressLookupTableProgram.createLookupTable({
+      authority: signer?.publicKey,
+      payer: signer?.publicKey,
+      recentSlot: slot,
+    });
+
+    const extendInstruction = AddressLookupTableProgram.extendLookupTable({
+      payer: signer?.publicKey,
+      authority: signer?.publicKey,
+      lookupTable: lookupTableAddress,
+      addresses: [TOKEN_PROGRAM_ID, this.TOKEN_METADATA_PROGRAM_ID, ASSOCIATED_PROGRAM_ID],
+    });
+    const { tx, status } = await sendTx({
+      connection: this.connection,
+      signers: [signer],
+      arrTxInstructions: [createLookupTableIns, extendInstruction],
+      payerKey: signer.publicKey,
+    });
+    if (status === 'error') {
+      throw new Error(tx);
     }
   }
 }

@@ -66,6 +66,24 @@ export const CARBON_IDL = {
           writable: true,
         },
         {
+          name: 'token_listing_status',
+          writable: true,
+          pda: {
+            seeds: [
+              {
+                kind: 'account',
+                path: 'token_listing_info',
+              },
+              {
+                kind: 'const',
+                value: [
+                  116, 111, 107, 101, 110, 95, 108, 105, 115, 116, 105, 110, 103, 95, 115, 116, 97, 116, 117, 115,
+                ],
+              },
+            ],
+          },
+        },
+        {
           name: 'token_owner',
           writable: true,
         },
@@ -336,6 +354,24 @@ export const CARBON_IDL = {
               {
                 kind: 'arg',
                 path: 'listing_args.nonce',
+              },
+            ],
+          },
+        },
+        {
+          name: 'token_listing_status',
+          writable: true,
+          pda: {
+            seeds: [
+              {
+                kind: 'account',
+                path: 'token_listing_info',
+              },
+              {
+                kind: 'const',
+                value: [
+                  116, 111, 107, 101, 110, 95, 108, 105, 115, 116, 105, 110, 103, 95, 115, 116, 97, 116, 117, 115,
+                ],
               },
             ],
           },
@@ -1013,6 +1049,10 @@ export const CARBON_IDL = {
       name: 'TokenListingInfo',
       discriminator: [224, 170, 101, 201, 223, 183, 148, 105],
     },
+    {
+      name: 'TokenListingStatus',
+      discriminator: [101, 132, 141, 56, 14, 67, 30, 25],
+    },
   ],
   errors: [
     {
@@ -1429,6 +1469,26 @@ export const CARBON_IDL = {
             type: {
               option: 'pubkey',
             },
+          },
+        ],
+      },
+    },
+    {
+      name: 'TokenListingStatus',
+      type: {
+        kind: 'struct',
+        fields: [
+          {
+            name: 'total_amount',
+            type: 'f64',
+          },
+          {
+            name: 'remaining',
+            type: 'f64',
+          },
+          {
+            name: 'out_of_token',
+            type: 'bool',
           },
         ],
       },

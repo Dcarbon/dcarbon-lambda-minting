@@ -63,6 +63,43 @@ export type ICarbonContract = {
           writable: true;
         },
         {
+          name: 'tokenListingStatus';
+          writable: true;
+          pda: {
+            seeds: [
+              {
+                kind: 'account';
+                path: 'tokenListingInfo';
+              },
+              {
+                kind: 'const';
+                value: [
+                  116,
+                  111,
+                  107,
+                  101,
+                  110,
+                  95,
+                  108,
+                  105,
+                  115,
+                  116,
+                  105,
+                  110,
+                  103,
+                  95,
+                  115,
+                  116,
+                  97,
+                  116,
+                  117,
+                  115,
+                ];
+              },
+            ];
+          };
+        },
+        {
           name: 'tokenOwner';
           writable: true;
         },
@@ -333,6 +370,43 @@ export type ICarbonContract = {
               {
                 kind: 'arg';
                 path: 'listing_args.nonce';
+              },
+            ];
+          };
+        },
+        {
+          name: 'tokenListingStatus';
+          writable: true;
+          pda: {
+            seeds: [
+              {
+                kind: 'account';
+                path: 'tokenListingInfo';
+              },
+              {
+                kind: 'const';
+                value: [
+                  116,
+                  111,
+                  107,
+                  101,
+                  110,
+                  95,
+                  108,
+                  105,
+                  115,
+                  116,
+                  105,
+                  110,
+                  103,
+                  95,
+                  115,
+                  116,
+                  97,
+                  116,
+                  117,
+                  115,
+                ];
               },
             ];
           };
@@ -1010,6 +1084,10 @@ export type ICarbonContract = {
       name: 'tokenListingInfo';
       discriminator: [224, 170, 101, 201, 223, 183, 148, 105];
     },
+    {
+      name: 'tokenListingStatus';
+      discriminator: [101, 132, 141, 56, 14, 67, 30, 25];
+    },
   ];
   errors: [
     {
@@ -1426,6 +1504,26 @@ export type ICarbonContract = {
             type: {
               option: 'pubkey';
             };
+          },
+        ];
+      };
+    },
+    {
+      name: 'tokenListingStatus';
+      type: {
+        kind: 'struct';
+        fields: [
+          {
+            name: 'totalAmount';
+            type: 'f64';
+          },
+          {
+            name: 'remaining';
+            type: 'f64';
+          },
+          {
+            name: 'outOfToken';
+            type: 'bool';
           },
         ];
       };

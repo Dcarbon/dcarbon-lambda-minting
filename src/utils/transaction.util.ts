@@ -1,4 +1,5 @@
 import {
+  AddressLookupTableAccount,
   Connection,
   Keypair,
   PublicKey,
@@ -15,6 +16,7 @@ interface ISendTxOption {
   payerKey: PublicKey;
   txInstructions?: TransactionInstruction;
   arrTxInstructions?: TransactionInstruction[];
+  lookupTableAccount?: AddressLookupTableAccount;
 }
 
 const sendTx = async ({
@@ -23,6 +25,7 @@ const sendTx = async ({
   payerKey,
   txInstructions,
   arrTxInstructions,
+  lookupTableAccount,
 }: ISendTxOption): Promise<{
   status: 'success' | 'error' | 'reject';
   tx?: string;
@@ -43,7 +46,7 @@ const sendTx = async ({
       payerKey,
       recentBlockhash: blockhash.value.blockhash,
       instructions: txInstructions ? [txInstructions] : arrTxInstructions ? arrTxInstructions : [],
-    }).compileToV0Message();
+    }).compileToV0Message(lookupTableAccount ? [lookupTableAccount] : []);
     const transactionV0 = new VersionedTransaction(messageV0);
     transactionV0.sign(signers);
 
@@ -114,4 +117,12 @@ const sendTx = async ({
     };
   }
 };
-export { sendTx };
+
+function u16ToBytes(value: number): Uint8Array {
+  const buffer = new ArrayBuffer(2); // u16 cần 2 bytes
+  const view = new DataView(buffer);
+  view.setUint16(0, value, true); // true để lưu theo Little Endian, false để lưu theo Big Endian
+  return new Uint8Array(buffer);
+}
+
+export { sendTx, u16ToBytes };

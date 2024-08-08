@@ -13,6 +13,8 @@ import { EMintScheduleType } from '@enums/minting.enum';
 import ConfigService from '@services/config';
 
 class MintingService {
+  private MINT_LOOKUP_TABLE = 'T6AL5ekrN5QeSaAWHfFRADkWmKZWnEAmbDvLDNqMxMm'; // FIXME: hardcode
+
   async triggerMinting(scheduleType: EMintScheduleType): Promise<void> {
     LoggerUtil.process(`Trigger minting [${scheduleType.toUpperCase()}]`);
     const schedules = await ConfigService.getMintingSchedule({ schedule_type: scheduleType });
@@ -30,6 +32,7 @@ class MintingService {
       const singer = await this.getSignerKeypair(deviceSetting.minter.toString());
       const deviceType = IOT_DEVICE_TYPE.find((type) => type.id === deviceSetting.device_type);
       const { signature, connection } = await SolanaService.mintSNFT(
+        this.MINT_LOOKUP_TABLE,
         singer,
         {
           name: `Carbon ${deviceId}-${nonce}`,
