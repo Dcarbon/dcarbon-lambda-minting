@@ -251,6 +251,21 @@ class SolanaService {
       throw new Error(tx);
     }
   }
+
+  async getListingInfo(address: string): Promise<{
+    owner: PublicKey;
+    mint: PublicKey;
+    amount: number;
+    price: number;
+    projectId: number;
+    currency: PublicKey;
+    remaining: number;
+  }> {
+    try {
+      const data = await this.program.account.tokenListingInfo.fetch(new PublicKey(address));
+      return data;
+    } catch (e) {}
+  }
 }
 
 export default new SolanaService();

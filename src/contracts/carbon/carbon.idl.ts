@@ -1,6 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-require('dotenv').config();
-
 export const CARBON_IDL = {
   address: process.env.CONTRACT_CARBON_PROGRAM_ID,
   metadata: {
@@ -43,6 +40,76 @@ export const CARBON_IDL = {
       ],
     },
     {
+      name: 'burn_sft',
+      discriminator: [102, 130, 58, 158, 77, 125, 18, 64],
+      accounts: [
+        {
+          name: 'signer',
+          writable: true,
+          signer: true,
+        },
+        {
+          name: 'mint_sft',
+          writable: true,
+        },
+        {
+          name: 'burn_ata',
+          writable: true,
+        },
+        {
+          name: 'metadata_sft',
+          writable: true,
+        },
+        {
+          name: 'burning_record',
+          writable: true,
+          pda: {
+            seeds: [
+              {
+                kind: 'const',
+                value: [98, 117, 114, 110, 105, 110, 103, 95, 114, 101, 99, 111, 114, 100],
+              },
+              {
+                kind: 'account',
+                path: 'signer',
+              },
+            ],
+          },
+        },
+        {
+          name: 'authority',
+          writable: true,
+          pda: {
+            seeds: [
+              {
+                kind: 'const',
+                value: [97, 117, 116, 104, 111, 114, 105, 116, 121],
+              },
+            ],
+          },
+        },
+        {
+          name: 'token_program',
+        },
+        {
+          name: 'system_program',
+          address: '11111111111111111111111111111111',
+        },
+        {
+          name: 'sysvar_program',
+        },
+        {
+          name: 'token_metadata_program',
+        },
+      ],
+      args: [
+        {
+          name: 'amount',
+          type: 'f64',
+        },
+      ],
+    },
+    {
       name: 'buy',
       discriminator: [102, 6, 61, 18, 1, 218, 235, 234],
       accounts: [
@@ -64,24 +131,6 @@ export const CARBON_IDL = {
         {
           name: 'token_listing_info',
           writable: true,
-        },
-        {
-          name: 'token_listing_status',
-          writable: true,
-          pda: {
-            seeds: [
-              {
-                kind: 'account',
-                path: 'token_listing_info',
-              },
-              {
-                kind: 'const',
-                value: [
-                  116, 111, 107, 101, 110, 95, 108, 105, 115, 116, 105, 110, 103, 95, 115, 116, 97, 116, 117, 115,
-                ],
-              },
-            ],
-          },
         },
         {
           name: 'token_owner',
@@ -114,6 +163,105 @@ export const CARBON_IDL = {
         {
           name: 'amount',
           type: 'f64',
+        },
+      ],
+    },
+    {
+      name: 'cancel_listing',
+      discriminator: [41, 183, 50, 232, 230, 233, 157, 70],
+      accounts: [
+        {
+          name: 'signer',
+          writable: true,
+          signer: true,
+        },
+        {
+          name: 'mint',
+        },
+        {
+          name: 'token_listing_info',
+          writable: true,
+        },
+      ],
+      args: [],
+    },
+    {
+      name: 'create_collection',
+      discriminator: [156, 251, 92, 54, 233, 2, 16, 82],
+      accounts: [
+        {
+          name: 'signer',
+          writable: true,
+          signer: true,
+        },
+        {
+          name: 'master_pda',
+          pda: {
+            seeds: [
+              {
+                kind: 'const',
+                value: [109, 97, 115, 116, 101, 114],
+              },
+            ],
+          },
+        },
+        {
+          name: 'collection_mint',
+          writable: true,
+          pda: {
+            seeds: [
+              {
+                kind: 'const',
+                value: [67, 111, 108, 108, 101, 99, 116, 105, 111, 110],
+              },
+            ],
+          },
+        },
+        {
+          name: 'metadata_account',
+          writable: true,
+        },
+        {
+          name: 'token_account',
+          writable: true,
+        },
+        {
+          name: 'master_edition',
+          writable: true,
+        },
+        {
+          name: 'system_program',
+          address: '11111111111111111111111111111111',
+        },
+        {
+          name: 'token_program',
+          address: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+        },
+        {
+          name: 'associated_token_program',
+          address: 'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL',
+        },
+        {
+          name: 'token_metadata_program',
+          address: 'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s',
+        },
+        {
+          name: 'rent',
+          address: 'SysvarRent111111111111111111111111111111111',
+        },
+      ],
+      args: [
+        {
+          name: 'uri',
+          type: 'string',
+        },
+        {
+          name: 'name',
+          type: 'string',
+        },
+        {
+          name: 'symbol',
+          type: 'string',
         },
       ],
     },
@@ -341,44 +489,21 @@ export const CARBON_IDL = {
             seeds: [
               {
                 kind: 'const',
-                value: [109, 97, 114, 107, 101, 116, 112, 108, 97, 99, 101],
-              },
-              {
-                kind: 'account',
-                path: 'mint',
+                value: [115, 101, 108, 102],
               },
               {
                 kind: 'account',
                 path: 'signer',
               },
               {
-                kind: 'arg',
-                path: 'listing_args.nonce',
-              },
-            ],
-          },
-        },
-        {
-          name: 'token_listing_status',
-          writable: true,
-          pda: {
-            seeds: [
-              {
                 kind: 'account',
-                path: 'token_listing_info',
-              },
-              {
-                kind: 'const',
-                value: [
-                  116, 111, 107, 101, 110, 95, 108, 105, 115, 116, 105, 110, 103, 95, 115, 116, 97, 116, 117, 115,
-                ],
+                path: 'mint',
               },
             ],
           },
         },
         {
           name: 'marketplace_delegate',
-          writable: true,
           pda: {
             seeds: [
               {
@@ -388,22 +513,6 @@ export const CARBON_IDL = {
               {
                 kind: 'const',
                 value: [100, 101, 108, 101, 103, 97, 116, 101],
-              },
-            ],
-          },
-        },
-        {
-          name: 'marketplace_counter',
-          writable: true,
-          pda: {
-            seeds: [
-              {
-                kind: 'const',
-                value: [109, 97, 114, 107, 101, 116, 112, 108, 97, 99, 101],
-              },
-              {
-                kind: 'const',
-                value: [99, 111, 117, 110, 116, 101, 114],
               },
             ],
           },
@@ -424,6 +533,108 @@ export const CARBON_IDL = {
               name: 'ListingArgs',
             },
           },
+        },
+      ],
+    },
+    {
+      name: 'mint_nft',
+      discriminator: [211, 57, 6, 167, 15, 219, 35, 251],
+      accounts: [
+        {
+          name: 'signer',
+          writable: true,
+          signer: true,
+        },
+        {
+          name: 'burning_record',
+          writable: true,
+          pda: {
+            seeds: [
+              {
+                kind: 'const',
+                value: [98, 117, 114, 110, 105, 110, 103, 95, 114, 101, 99, 111, 114, 100],
+              },
+              {
+                kind: 'account',
+                path: 'signer',
+              },
+            ],
+          },
+        },
+        {
+          name: 'collection_mint',
+          writable: true,
+          pda: {
+            seeds: [
+              {
+                kind: 'const',
+                value: [67, 111, 108, 108, 101, 99, 116, 105, 111, 110],
+              },
+            ],
+          },
+        },
+        {
+          name: 'collection_metadata_account',
+          writable: true,
+        },
+        {
+          name: 'collection_master_edition',
+          writable: true,
+        },
+        {
+          name: 'nft_mint',
+          writable: true,
+          signer: true,
+        },
+        {
+          name: 'metadata_account',
+          writable: true,
+        },
+        {
+          name: 'master_edition',
+          writable: true,
+        },
+        {
+          name: 'token_account',
+          writable: true,
+        },
+        {
+          name: 'system_program',
+          address: '11111111111111111111111111111111',
+        },
+        {
+          name: 'token_program',
+          address: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+        },
+        {
+          name: 'associated_token_program',
+          address: 'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL',
+        },
+        {
+          name: 'token_metadata_program',
+          address: 'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s',
+        },
+        {
+          name: 'rent',
+          address: 'SysvarRent111111111111111111111111111111111',
+        },
+      ],
+      args: [
+        {
+          name: 'uri',
+          type: 'string',
+        },
+        {
+          name: 'name',
+          type: 'string',
+        },
+        {
+          name: 'symbol',
+          type: 'string',
+        },
+        {
+          name: 'amount',
+          type: 'f64',
         },
       ],
     },
@@ -1014,6 +1225,10 @@ export const CARBON_IDL = {
       discriminator: [244, 158, 220, 65, 8, 73, 4, 65],
     },
     {
+      name: 'BurningRecord',
+      discriminator: [156, 23, 40, 15, 223, 187, 233, 47],
+    },
+    {
       name: 'Claim',
       discriminator: [155, 70, 22, 176, 123, 215, 246, 102],
     },
@@ -1038,20 +1253,12 @@ export const CARBON_IDL = {
       discriminator: [18, 143, 88, 13, 73, 217, 47, 49],
     },
     {
-      name: 'MarketplaceCounter',
-      discriminator: [37, 216, 70, 234, 111, 16, 108, 17],
-    },
-    {
       name: 'Master',
       discriminator: [168, 213, 193, 12, 77, 162, 58, 235],
     },
     {
       name: 'TokenListingInfo',
       discriminator: [224, 170, 101, 201, 223, 183, 148, 105],
-    },
-    {
-      name: 'TokenListingStatus',
-      discriminator: [101, 132, 141, 56, 14, 67, 30, 25],
     },
   ],
   errors: [
@@ -1107,6 +1314,14 @@ export const CARBON_IDL = {
       code: 6010,
       name: 'NotEnoughAmount',
     },
+    {
+      code: 6011,
+      name: 'InvalidMint',
+    },
+    {
+      code: 6012,
+      name: 'InvalidAmount',
+    },
   ],
   types: [
     {
@@ -1117,6 +1332,22 @@ export const CARBON_IDL = {
           {
             name: 'admin_key',
             type: 'pubkey',
+          },
+        ],
+      },
+    },
+    {
+      name: 'BurningRecord',
+      type: {
+        kind: 'struct',
+        fields: [
+          {
+            name: 'total_amount',
+            type: 'f64',
+          },
+          {
+            name: 'remaining',
+            type: 'f64',
           },
         ],
       },
@@ -1331,10 +1562,6 @@ export const CARBON_IDL = {
         kind: 'struct',
         fields: [
           {
-            name: 'amount',
-            type: 'f64',
-          },
-          {
             name: 'price',
             type: 'f64',
           },
@@ -1343,26 +1570,14 @@ export const CARBON_IDL = {
             type: 'u16',
           },
           {
-            name: 'nonce',
-            type: 'u32',
-          },
-          {
             name: 'currency',
             type: {
               option: 'pubkey',
             },
           },
-        ],
-      },
-    },
-    {
-      name: 'MarketplaceCounter',
-      type: {
-        kind: 'struct',
-        fields: [
           {
-            name: 'nonce',
-            type: 'u32',
+            name: 'amount',
+            type: 'f64',
           },
         ],
       },
@@ -1461,34 +1676,14 @@ export const CARBON_IDL = {
             type: 'u16',
           },
           {
-            name: 'nonce',
-            type: 'u32',
-          },
-          {
             name: 'currency',
             type: {
               option: 'pubkey',
             },
           },
-        ],
-      },
-    },
-    {
-      name: 'TokenListingStatus',
-      type: {
-        kind: 'struct',
-        fields: [
-          {
-            name: 'total_amount',
-            type: 'f64',
-          },
           {
             name: 'remaining',
             type: 'f64',
-          },
-          {
-            name: 'out_of_token',
-            type: 'bool',
           },
         ],
       },
@@ -1520,6 +1715,13 @@ export const CARBON_IDL = {
           },
         ],
       },
+    },
+  ],
+  constants: [
+    {
+      name: 'SEED',
+      type: 'string',
+      value: '"Collection"',
     },
   ],
 };
