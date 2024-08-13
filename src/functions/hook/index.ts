@@ -7,7 +7,7 @@ export const syncTxHelius = {
   events: [
     {
       httpApi: {
-        method: 'get',
+        method: 'post',
         path: `${PREFIX}/hook/helius`,
         summary: 'Helius hook',
         swaggerTags: ['COMMON'],
