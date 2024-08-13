@@ -93,13 +93,13 @@
       }
     },
     "/v1/common/hook/helius": {
-      "get": {
+      "post": {
         "summary": "Helius hook",
         "description": "",
         "tags": [
           "COMMON"
         ],
-        "operationId": "syncTxHelius.get./v1/common/hook/helius",
+        "operationId": "syncTxHelius.post./v1/common/hook/helius",
         "consumes": [
           "application/json"
         ],

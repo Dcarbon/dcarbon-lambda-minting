@@ -19,13 +19,13 @@ class MarketTransactionHistoryEntity {
   @Column({ type: 'varchar', nullable: false })
   mint: string;
 
-  @Column({ type: 'integer', nullable: true })
+  @Column('decimal', { default: 0, precision: 22, scale: 9, nullable: true })
   amount?: number;
 
   @Column({ type: 'varchar', nullable: true })
   currency?: string;
 
-  @Column({ type: 'integer', nullable: true })
+  @Column('decimal', { default: 0, precision: 22, scale: 9, nullable: true })
   payment_total?: number;
 
   @Column({ type: 'timestamptz', nullable: true })

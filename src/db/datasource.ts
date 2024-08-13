@@ -2,6 +2,7 @@ import { DataSource, EntityManager } from 'typeorm';
 import LoggerUtil from '@utils/logger.util';
 import { DeviceTransactionHistoryEntity } from '../entities/device_transaction_history.entity';
 import { MintingScheduleEntity } from '../entities/minting_schedule.entity';
+import { MarketTransactionHistoryEntity } from '../entities/market_history.entity';
 
 class DatasourceManager {
   public manager: EntityManager;
@@ -16,7 +17,7 @@ class DatasourceManager {
       username: process.env.POSTGRES_DB_USER,
       password: process.env.POSTGRES_DB_PASSWORD,
       database: process.env.POSTGRES_DB_NAME,
-      entities: [DeviceTransactionHistoryEntity, MintingScheduleEntity],
+      entities: [DeviceTransactionHistoryEntity, MintingScheduleEntity, MarketTransactionHistoryEntity],
     });
     try {
       await AppDataSource.initialize();
