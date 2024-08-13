@@ -91,6 +91,28 @@
           }
         }
       }
+    },
+    "/v1/common/hook/helius": {
+      "get": {
+        "summary": "Helius hook",
+        "description": "",
+        "tags": [
+          "COMMON"
+        ],
+        "operationId": "syncTxHelius.get./v1/common/hook/helius",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "200 response"
+          }
+        }
+      }
     }
   },
   "definitions": {

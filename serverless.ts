@@ -1,5 +1,6 @@
 import { health } from '@functions/common';
 import { minting, triggerMinting } from '@functions/minting';
+import { syncTxHelius } from '@functions/hook';
 import type { AWS } from '@serverless/typescript';
 
 const serverlessConfiguration: AWS = {
@@ -40,6 +41,7 @@ const serverlessConfiguration: AWS = {
         '${file(./env/env.${opt:stage, "dev"}.json):EIP_712_DOMAIN_VERIFYING_CONTRACT}',
       EIP_712_ETH_ADDRESS: '${file(./env/env.${opt:stage, "dev"}.json):EIP_712_ETH_ADDRESS}',
       COMMON_SKIP_PREFLIGHT: '${file(./env/env.${opt:stage, "dev"}.json):COMMON_SKIP_PREFLIGHT}',
+      COMMON_HELIUS_HOOK_SECRET: '${file(./env/env.${opt:stage, "dev"}.json):COMMON_HELIUS_HOOK_SECRET}',
       //SSM
       ENDPOINT_RPC: '${ssm:/dcarbon/${opt:stage, "dev"}/admin-backend/endpoint/endpoint_rpc}',
       POSTGRES_DB_HOST: '${ssm:/dcarbon/${opt:stage, "dev"}/admin-backend/postgres/postgres_db_host}',
@@ -55,6 +57,7 @@ const serverlessConfiguration: AWS = {
     health,
     minting,
     triggerMinting,
+    syncTxHelius,
   },
   package: { individually: true },
   custom: {

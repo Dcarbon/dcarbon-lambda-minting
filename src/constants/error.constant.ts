@@ -6,6 +6,9 @@ const COMMON_ERROR_CODE = {
 };
 
 const ERROR_CODE = {
+  HOOK: {
+    PERMISSION_DENIED: { code: 'ERROR4_001', msg: 'Permission denied' },
+  },
   LAMBDA: {
     LAMBDA_INVOKE_ERROR: { code: 'ERROR2_001' },
   },
