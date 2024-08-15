@@ -1,4 +1,4 @@
-import process from 'node:process';
+import { Big } from 'big.js';
 import MyError from '@exceptions/my_error.exception';
 import { EHttpStatus } from '@enums/http.enum';
 import { ERROR_CODE } from '@constants/error.constant';
@@ -7,11 +7,16 @@ import HistoryService from '@services/history';
 import { ParsedTransactionWithMeta } from '@solana/web3.js';
 import Solana from '@services/solana';
 import { MarketTransactionHistoryEntity } from '../../entities/market_history.entity';
+import { TTokenPythPrice } from '../../interfaces/commons';
 
 class HeliusService {
+  private BUY_TOKEN_MAP: { [key: string]: TTokenPythPrice } = {
+    [process.env.COMMON_USDC_ADDRESS]: 'Crypto.USDC/USD',
+    [process.env.COMMON_USDT_ADDRESS]: 'Crypto.USDT/USD',
+    ['None']: 'Crypto.SOL/USD',
+  };
+
   async syncTxHelius(rawTxs: ParsedTransactionWithMeta[], secret: string): Promise<void> {
-    LoggerUtil.info('rawTxs ' + JSON.stringify(rawTxs));
-    LoggerUtil.info('secret ' + secret);
     if (process.env.COMMON_HELIUS_HOOK_SECRET !== secret)
       throw new MyError(
         EHttpStatus.BadRequest,
@@ -27,9 +32,16 @@ class HeliusService {
           if (logs) {
             const buyInfoLog = logs.filter((log) => log.indexOf('Program log: buy_info-') === 0);
             if (buyInfoLog && buyInfoLog.length > 0) {
+              signature = transaction.transaction?.signatures[0];
+              LoggerUtil.process(`Helius sync BUY tx [${signature}]`);
               const buyInfo = buyInfoLog[0].replace('Program log: buy_info-', '');
               const buyInfoArr = buyInfo.split('-');
               if (buyInfoArr.length > 1) {
+                const tokenPrices = await Solana.getPriceOfTokens([
+                  'Crypto.SOL/USD',
+                  'Crypto.USDT/USD',
+                  'Crypto.USDC/USD',
+                ]);
                 const seller = buyInfoArr[0];
                 const buyer = buyInfoArr[1];
                 const amount = buyInfoArr[2];
@@ -41,9 +53,8 @@ class HeliusService {
                   transaction?.meta?.postTokenBalances && transaction?.meta?.postTokenBalances.length > 0
                     ? transaction?.meta?.postTokenBalances[0].mint
                     : undefined;
-                signature = transaction.transaction?.signatures[0];
                 if (signature) {
-                  inputs.push({
+                  const historyData: MarketTransactionHistoryEntity = {
                     signature: signature,
                     project_id: listingInfo ? String(listingInfo.projectId || '0') : undefined,
                     seller,
@@ -54,13 +65,19 @@ class HeliusService {
                     payment_total: Number(paymentTotal),
                     tx_time: transaction.blockTime ? new Date(transaction.blockTime * 1000) : null,
                     created_by: 'LAMBDA',
-                  });
+                  };
+                  const matchPrice = tokenPrices.find((token) => token.token === this.BUY_TOKEN_MAP[currency]);
+                  if (matchPrice) {
+                    historyData.payment_total_usd = Big(paymentTotal).mul(Big(matchPrice.price)).toNumber();
+                  }
+                  inputs.push(historyData);
                 }
+                LoggerUtil.process(`Helius sync BUY tx [${signature}]`);
               }
             }
           }
         } catch (e) {
-          LoggerUtil.error(`Cannot sync [IDO] of signature [${signature}] ${e.stack}`);
+          LoggerUtil.error(`Cannot sync data of signature [${signature}] ${e.stack}`);
         }
       }),
     );

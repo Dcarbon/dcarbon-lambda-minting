@@ -15,3 +15,16 @@ export const health = {
     },
   ],
 };
+
+export const getTokenPrice = {
+  handler: `${handlerPath(__dirname)}/handler.GetTokenPriceFn`,
+  events: [
+    {
+      httpApi: {
+        method: 'get',
+        path: `${PREFIX}/prices`,
+        swaggerTags: ['COMMON'],
+      },
+    },
+  ],
+};

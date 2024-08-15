@@ -31,6 +31,9 @@ class MarketTransactionHistoryEntity {
   @Column('decimal', { default: 0, precision: 22, scale: 9, nullable: true })
   payment_total?: number;
 
+  @Column('decimal', { default: 0, precision: 22, scale: 9, nullable: true })
+  payment_total_usd?: number;
+
   @Column({ type: 'timestamptz', nullable: true })
   tx_time?: string | Date | null;
 

@@ -113,6 +113,28 @@
           }
         }
       }
+    },
+    "/v1/common/prices": {
+      "get": {
+        "summary": "getTokenPrice",
+        "description": "",
+        "tags": [
+          "COMMON"
+        ],
+        "operationId": "getTokenPrice.get./v1/common/prices",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "200 response"
+          }
+        }
+      }
     }
   },
   "definitions": {

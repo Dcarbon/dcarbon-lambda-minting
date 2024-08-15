@@ -13,6 +13,8 @@ import VerifyUtil from '@utils/verify.util';
 import LoggerUtil from '@utils/logger.util';
 import S3Service from '@services/aws/s3';
 import { sendTx, u16ToBytes } from '@utils/transaction.util';
+import { getPythClusterApiUrl, getPythProgramKeyForCluster, PriceStatus, PythHttpClient } from '@pythnetwork/client';
+import Ssm from '@services/aws/ssm';
 import { ICarbonContract } from '../../contracts/carbon/carbon.interface';
 import { CARBON_IDL } from '../../contracts/carbon/carbon.idl';
 import {
@@ -21,6 +23,7 @@ import {
   OCDeviceSetting,
   SignatureVerifyInfo,
 } from '../../interfaces/minting';
+import { IPythTokenPrice, TTokenPythPrice } from '../../interfaces/commons';
 
 type MintSftArgs = IdlTypes<ICarbonContract>['mintSftArgs'];
 type VerifyMessageArgs = IdlTypes<ICarbonContract>['verifyMessageArgs'];
@@ -28,9 +31,15 @@ type VerifyMessageArgs = IdlTypes<ICarbonContract>['verifyMessageArgs'];
 class SolanaService {
   private readonly connection: Connection;
 
+  private readonly pythConnection: Connection;
+
+  private readonly pythPublicKey: PublicKey;
+
   private program: Program<ICarbonContract>;
 
   private readonly TOKEN_METADATA_PROGRAM_ID: PublicKey;
+
+  private tokenPrice: { info: IPythTokenPrice[]; lastUpdateTime: number };
 
   constructor() {
     this.connection = new Connection(process.env.ENDPOINT_RPC, 'confirmed');
@@ -38,6 +47,8 @@ class SolanaService {
       connection: this.connection,
     });
     this.TOKEN_METADATA_PROGRAM_ID = new PublicKey(MPL_TOKEN_METADATA_PROGRAM_ID.toString());
+    this.pythConnection = new Connection(getPythClusterApiUrl('pythnet'));
+    this.pythPublicKey = getPythProgramKeyForCluster('pythnet');
   }
 
   async getDeviceSetting(projectId: string, deviceId: string): Promise<OCDeviceSetting> {
@@ -265,6 +276,49 @@ class SolanaService {
       const data = await this.program.account.tokenListingInfo.fetch(new PublicKey(address));
       return data;
     } catch (e) {}
+  }
+
+  async getPriceOfTokens(tokens: TTokenPythPrice[]): Promise<IPythTokenPrice[]> {
+    const currentTime = new Date().getTime();
+    if (
+      this.tokenPrice &&
+      this.tokenPrice.info.length >= tokens.length &&
+      currentTime - (this.tokenPrice.lastUpdateTime || 0) <= 60_000
+    ) {
+      LoggerUtil.info(`Get price from cache`);
+      return this.tokenPrice.info;
+    }
+    LoggerUtil.info(`Get price from PYTH`);
+    const pythClient = new PythHttpClient(this.pythConnection, this.pythPublicKey);
+    const data = await pythClient.getData();
+    let prices: IPythTokenPrice[] = [];
+    for (const symbol of tokens) {
+      try {
+        const price = data.productPrice.get(symbol);
+        if (price.price && price.confidence) {
+          prices.push({
+            token: symbol,
+            price: price.price,
+          });
+        } else {
+          LoggerUtil.error(`${symbol}: price currently unavailable. status is ${PriceStatus[price.status]}`);
+        }
+      } catch (e) {
+        LoggerUtil.error(`Cannot get price from PYTH: ${e.stack}`);
+      }
+    }
+    if (prices.length > 0) {
+      this.tokenPrice = {
+        info: prices,
+        lastUpdateTime: currentTime,
+      };
+      await Ssm.putParameterCommand(process.env.COMMON_PYTH_TOKEN_PRICE, JSON.stringify(prices));
+    } else {
+      LoggerUtil.info(`Get price from SSM`);
+      const strPrice = await Ssm.getParameterCommand(process.env.COMMON_PYTH_TOKEN_PRICE);
+      if (strPrice) prices = JSON.parse(strPrice) as IPythTokenPrice[];
+    }
+    return prices;
   }
 }
 
