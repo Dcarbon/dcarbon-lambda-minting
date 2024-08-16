@@ -6,11 +6,12 @@ import { EHttpStatus } from '@enums/http.enum';
 import { ERROR_CODE } from '@constants/error.constant';
 import SolanaService from '@services/solana';
 import LoggerUtil from '@utils/logger.util';
-import { IOT_DEVICE_TYPE } from '@constants/iot.constant';
+import { IOT_DEVICE_TYPE, IOT_PROJECT_TYPE } from '@constants/iot.constant';
 import HistoryService from '@services/history';
 import { EDeviceCreditActionType } from '@enums/device.enum';
 import { EMintScheduleType } from '@enums/minting.enum';
 import ConfigService from '@services/config';
+import Dcarbon from '@services/dcarbon';
 
 class MintingService {
   private MINT_LOOKUP_TABLE = 'T6AL5ekrN5QeSaAWHfFRADkWmKZWnEAmbDvLDNqMxMm'; // FIXME: hardcode
@@ -25,30 +26,42 @@ class MintingService {
   }
 
   async minting(projectId: string, deviceId: string, amount: number, nonce: number, mint_time: number): Promise<any> {
-    const deviceSetting = await SolanaService.getDeviceSetting(projectId, deviceId);
+    const [{ data: project }, deviceSetting] = await Promise.all([
+      Dcarbon.projectDetail(projectId),
+      SolanaService.getDeviceSetting(projectId, deviceId),
+    ]);
     if (!deviceSetting.is_active || !deviceSetting.device_id) {
       LoggerUtil.info(`Device [${deviceId}] of project [${projectId}] inactive`);
     } else {
       const singer = await this.getSignerKeypair(deviceSetting.minter.toString());
       const deviceType = IOT_DEVICE_TYPE.find((type) => type.id === deviceSetting.device_type);
+      const projectType = IOT_PROJECT_TYPE.find((info) => info.id === project.type);
       const { signature, connection } = await SolanaService.mintSNFT(
         this.MINT_LOOKUP_TABLE,
         singer,
         {
-          name: `Carbon ${deviceId}-${nonce}`,
-          symbol: `C${deviceId}-${nonce}`,
-          image: `${process.env.AWS_S3_BUCKET_URL}/public/metadata/token/default_icon.png`,
+          name: `CARBON ${deviceId}-${nonce}`,
+          symbol: `DC02`,
+          image: `${process.env.ENDPOINT_IPFS_NFT_IMAGE}`,
           attributes: [
             {
-              trait_type: 'Project',
-              value: `Project ${projectId}`,
+              trait_type: 'ProjectID',
+              value: projectId,
             },
             {
-              trait_type: 'Device',
-              value: `IOT ${deviceId}`,
+              trait_type: 'ProjectName',
+              value: project.descs && project.descs.length > 0 ? project.descs[0].name : `Project ${projectId}`,
             },
             {
-              trait_type: 'Type',
+              trait_type: 'ProjectModel',
+              value: projectType ? projectType.name : IOT_PROJECT_TYPE[0].name,
+            },
+            {
+              trait_type: 'DeviceID',
+              value: deviceId,
+            },
+            {
+              trait_type: 'DeviceType',
               value: deviceType ? deviceType.name : IOT_DEVICE_TYPE[1].name,
             },
           ],

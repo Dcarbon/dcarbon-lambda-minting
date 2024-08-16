@@ -44,6 +44,8 @@ const serverlessConfiguration: AWS = {
       COMMON_HELIUS_HOOK_SECRET: '${file(./env/env.${opt:stage, "dev"}.json):COMMON_HELIUS_HOOK_SECRET}',
       COMMON_USDC_ADDRESS: '${file(./env/env.${opt:stage, "dev"}.json):COMMON_USDC_ADDRESS}',
       COMMON_USDT_ADDRESS: '${file(./env/env.${opt:stage, "dev"}.json):COMMON_USDT_ADDRESS}',
+      ENDPOINT_IOT_API: '${file(./env/env.${opt:stage, "dev"}.json):ENDPOINT_IOT_API}',
+      ENDPOINT_IPFS_NFT_IMAGE: '${file(./env/env.${opt:stage, "dev"}.json):ENDPOINT_IPFS_NFT_IMAGE}',
       //SSM
       ENDPOINT_RPC: '${ssm:/dcarbon/${opt:stage, "dev"}/admin-backend/endpoint/endpoint_rpc}',
       POSTGRES_DB_HOST: '${ssm:/dcarbon/${opt:stage, "dev"}/admin-backend/postgres/postgres_db_host}',

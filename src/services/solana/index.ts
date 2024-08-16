@@ -15,6 +15,7 @@ import S3Service from '@services/aws/s3';
 import { sendTx, u16ToBytes } from '@utils/transaction.util';
 import { getPythClusterApiUrl, getPythProgramKeyForCluster, PriceStatus, PythHttpClient } from '@pythnetwork/client';
 import Ssm from '@services/aws/ssm';
+import Arweave from '@services/arweave';
 import { ICarbonContract } from '../../contracts/carbon/carbon.interface';
 import { CARBON_IDL } from '../../contracts/carbon/carbon.idl';
 import {
@@ -102,7 +103,7 @@ class SolanaService {
     LoggerUtil.info('Minting SNFT with metadata: ' + JSON.stringify(input));
     const minterBalance = await this.connection.getBalance(minter.publicKey);
     LoggerUtil.info(`Minter balance: ${minterBalance}`);
-    const uri = await this.generateMetadata(input);
+    const uri = await Arweave.uploadMetadata(JSON.stringify(input), 'application/json');
     const mint = Keypair.generate();
     const decimals = 1;
     const [metadata] = PublicKey.findProgramAddressSync(

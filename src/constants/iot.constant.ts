@@ -1,5 +1,15 @@
 import { EIotDeviceType } from '@enums/device.enum';
-import { IIotDeviceType } from '../interfaces/device';
+import { IIotDeviceType, IIotProjectType } from '@interfaces/device';
+import { EProjectType } from '@enums/project.enum';
+
+const IOT_API = {
+  PROJECT: {
+    ROOT: '/project',
+  },
+  DEVICE: {
+    ROOT: '/iots',
+  },
+};
 
 const IOT_DEVICE_TYPE: IIotDeviceType[] = [
   {
@@ -35,4 +45,37 @@ const IOT_DEVICE_TYPE: IIotDeviceType[] = [
     name: 'Burn Trash',
   },
 ];
-export { IOT_DEVICE_TYPE };
+
+const IOT_PROJECT_TYPE: IIotProjectType[] = [
+  {
+    id: 0,
+    code: EProjectType.PRJT_NONE,
+    name: 'None',
+    active: true,
+  },
+  {
+    id: 1,
+    code: EProjectType.PRJT_G,
+    name: 'Model G',
+    active: true,
+  },
+  {
+    id: 2,
+    code: EProjectType.PRJT_E,
+    name: 'Model E',
+    active: true,
+  },
+  {
+    id: 3,
+    code: EProjectType.PRJT_S,
+    name: 'Model S',
+    active: false,
+  },
+  {
+    id: 4,
+    code: EProjectType.PRJT_DRAFT,
+    name: 'Draft',
+    active: true,
+  },
+];
+export { IOT_DEVICE_TYPE, IOT_API, IOT_PROJECT_TYPE };

@@ -31,6 +31,9 @@
       ],
       "@commons/*": [
         "src/commons/*"
+      ],
+      "@interfaces/*": [
+        "src/interfaces/*"
       ]
     }
   }
