@@ -45,23 +45,23 @@ class MintingService {
           image: `${process.env.ENDPOINT_IPFS_NFT_IMAGE}`,
           attributes: [
             {
-              trait_type: 'ProjectID',
+              trait_type: 'Project ID',
               value: projectId,
             },
             {
-              trait_type: 'ProjectName',
+              trait_type: 'Project Name',
               value: project.descs && project.descs.length > 0 ? project.descs[0].name : `Project ${projectId}`,
             },
             {
-              trait_type: 'ProjectModel',
+              trait_type: 'Project Model',
               value: projectType ? projectType.name : IOT_PROJECT_TYPE[0].name,
             },
             {
-              trait_type: 'DeviceID',
+              trait_type: 'Device ID',
               value: deviceId,
             },
             {
-              trait_type: 'DeviceType',
+              trait_type: 'Device Type',
               value: deviceType ? deviceType.name : IOT_DEVICE_TYPE[1].name,
             },
           ],
