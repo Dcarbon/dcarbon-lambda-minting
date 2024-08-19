@@ -5,14 +5,14 @@ class MintHistoryEntity {
   @PrimaryGeneratedColumn('uuid', { primaryKeyConstraintName: 'mint_history_pk' })
   id?: string;
 
-  @Column({ type: 'varchar', nullable: false })
+  @Column({ type: 'varchar', nullable: false, unique: true })
   signature: string;
 
   @Column({ type: 'varchar', nullable: false })
   mint: string;
 
   @Column({ type: 'varchar', nullable: false })
-  @Index('mh_owner_idx', { unique: true })
+  @Index('mh_owner_idx')
   owner: string;
 
   @Column({ type: 'timestamptz', nullable: true })
