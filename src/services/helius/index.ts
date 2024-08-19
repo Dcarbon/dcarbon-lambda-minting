@@ -8,6 +8,7 @@ import { ParsedTransactionWithMeta } from '@solana/web3.js';
 import Solana from '@services/solana';
 import { MarketTransactionHistoryEntity } from '../../entities/market_history.entity';
 import { TTokenPythPrice } from '../../interfaces/commons';
+import { MintHistoryEntity } from '../../entities/mint_history.entity';
 
 class HeliusService {
   private BUY_TOKEN_MAP: { [key: string]: TTokenPythPrice } = {
@@ -24,6 +25,7 @@ class HeliusService {
         ERROR_CODE.HOOK.PERMISSION_DENIED.msg,
       );
     const inputs: MarketTransactionHistoryEntity[] = [];
+    const mintInputs: MintHistoryEntity[] = [];
     await Promise.all(
       rawTxs.map(async (transaction) => {
         let signature = 'UNKNOWN';
@@ -31,8 +33,9 @@ class HeliusService {
           const logs = transaction.meta?.logMessages;
           if (logs) {
             const buyInfoLog = logs.filter((log) => log.indexOf('Program log: buy_info-') === 0);
+            const mintInfoLog = logs.filter((log) => log.indexOf('Program log: Instruction: MintNft') === 0);
+            signature = transaction.transaction?.signatures[0];
             if (buyInfoLog && buyInfoLog.length > 0) {
-              signature = transaction.transaction?.signatures[0];
               LoggerUtil.process(`Helius sync BUY tx [${signature}]`);
               const buyInfo = buyInfoLog[0].replace('Program log: buy_info-', '');
               const buyInfoArr = buyInfo.split('-');
@@ -74,6 +77,15 @@ class HeliusService {
                 }
                 LoggerUtil.process(`Helius sync BUY tx [${signature}]`);
               }
+            } else if (mintInfoLog && mintInfoLog.length > 0) {
+              LoggerUtil.process(`Helius sync MINT tx [${signature}]`);
+              mintInputs.push({
+                signature: signature,
+                mint: transaction?.meta?.postTokenBalances[0].mint,
+                owner: transaction?.meta?.postTokenBalances[0].owner,
+                tx_time: transaction.blockTime ? new Date(transaction.blockTime * 1000) : null,
+                created_by: 'LAMBDA',
+              });
             }
           }
         } catch (e) {
@@ -81,7 +93,8 @@ class HeliusService {
         }
       }),
     );
-    await HistoryService.createMarketTxHistory(inputs);
+    if (inputs.length > 0) await HistoryService.createMarketTxHistory(inputs);
+    if (mintInputs.length > 0) await HistoryService.createMintHistory(mintInputs);
   }
 }
 
