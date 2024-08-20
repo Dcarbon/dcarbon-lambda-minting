@@ -24,6 +24,7 @@ import { CARBON_IDL } from '../../contracts/carbon/carbon.idl';
 import {
   ICreateMetadataInput,
   IIotSignatureInput,
+  OCContractSetting,
   OCDeviceSetting,
   SignatureVerifyInfo,
 } from '../../interfaces/minting';
@@ -45,6 +46,8 @@ class SolanaService {
 
   private tokenPrice: { info: IPythTokenPrice[]; lastUpdateTime: number };
 
+  private vault: string;
+
   constructor() {
     this.connection = new Connection(process.env.ENDPOINT_RPC, 'confirmed');
     this.program = new Program<ICarbonContract>(CARBON_IDL as ICarbonContract, {
@@ -53,6 +56,33 @@ class SolanaService {
     this.TOKEN_METADATA_PROGRAM_ID = new PublicKey(MPL_TOKEN_METADATA_PROGRAM_ID.toString());
     this.pythConnection = new Connection(getPythClusterApiUrl('pythnet'));
     this.pythPublicKey = getPythProgramKeyForCluster('pythnet');
+  }
+
+  async contractSetting(): Promise<OCContractSetting> {
+    if (this.vault)
+      return {
+        vault: this.vault,
+      };
+    try {
+      const [configContract] = PublicKey.findProgramAddressSync(
+        [Buffer.from('contract_config')],
+        this.program.programId,
+      );
+      const config = await this.program.account.contractConfig.fetch(configContract);
+      if (config) {
+        this.vault = config.vault.toString();
+        return {
+          vault: this.vault,
+        };
+      }
+    } catch (e) {
+      LoggerUtil.error(e.stack);
+      throw new MyError(
+        EHttpStatus.BadRequest,
+        ERROR_CODE.MINTING.CONTRACT_NOT_CONFIG.code,
+        ERROR_CODE.MINTING.CONTRACT_NOT_CONFIG.msg,
+      );
+    }
   }
 
   async getDeviceSetting(projectId: string, deviceId: string): Promise<OCDeviceSetting> {
@@ -112,6 +142,7 @@ class SolanaService {
     amount: number,
     nonce: number,
     owner: PublicKey,
+    collectFee: string,
   ): Promise<{ connection: Connection; signature: string }> {
     LoggerUtil.info('Minting SNFT with metadata: ' + JSON.stringify(input));
     const minterBalance = await this.connection.getBalance(minter.publicKey);
@@ -123,7 +154,7 @@ class SolanaService {
       [Buffer.from('metadata'), this.TOKEN_METADATA_PROGRAM_ID.toBuffer(), mint.publicKey.toBuffer()],
       this.TOKEN_METADATA_PROGRAM_ID,
     );
-    const vault = new PublicKey('6S4VHTNaKjNvTV7dYUkTMfdWWTuXu8jw3kHGvtpruWJi'); // FIXME: hardcode
+    const vault = new PublicKey(collectFee);
     const createArgsVec: CreateArgsArgs = {
       __kind: 'V1',
       name: input.name,
@@ -157,7 +188,7 @@ class SolanaService {
     };
 
     const verifyInfo = await this.createSignatureVerifyInfo(signatureInput);
-    const eth_address = process.env.EIP_712_ETH_ADDRESS;
+    const eth_address = signatureInput.iot.slice(2);
     const ethAddress = ethers.utils.arrayify('0x' + eth_address);
     const verifyMessageArgs: VerifyMessageArgs = {
       msg: verifyInfo.message,
@@ -221,6 +252,7 @@ class SolanaService {
     projectId: string,
     deviceId: string,
     owner: PublicKey,
+    collectFee: string,
   ): Promise<{ connection: Connection; signature: string; txTime: number }> {
     LoggerUtil.info('Minting SNFT with metadata: ' + JSON.stringify(input));
     const minterBalance = await this.connection.getBalance(minter.publicKey);
@@ -232,7 +264,7 @@ class SolanaService {
       [Buffer.from('metadata'), this.TOKEN_METADATA_PROGRAM_ID.toBuffer(), mint.publicKey.toBuffer()],
       this.TOKEN_METADATA_PROGRAM_ID,
     );
-    const vault = new PublicKey('6S4VHTNaKjNvTV7dYUkTMfdWWTuXu8jw3kHGvtpruWJi'); // FIXME: hardcode
+    const vault = new PublicKey(collectFee);
     const createArgsVec: CreateArgsArgs = {
       __kind: 'V1',
       name: input.name,
@@ -261,12 +293,12 @@ class SolanaService {
       projectId: Number(projectId),
       deviceId: Number(deviceId),
       createMintDataVec: Buffer.from(data1),
-      totalAmount: 1,
+      totalAmount: Number.parseInt(signatureInput.amount),
       nonce: signatureInput.nonce,
     };
 
     const verifyInfo = await this.createSignatureVerifyInfo(signatureInput);
-    const eth_address = process.env.EIP_712_ETH_ADDRESS;
+    const eth_address = signatureInput.iot.slice(2);
     const ethAddress = ethers.utils.arrayify('0x' + eth_address);
     const verifyMessageArgs: VerifyMessageArgs = {
       msg: verifyInfo.message,

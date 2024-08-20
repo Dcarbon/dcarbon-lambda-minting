@@ -17,6 +17,7 @@ const ERROR_CODE = {
     MINTER_KEYPAIR_NOT_FOUND: { code: 'ERROR3_001', msg: 'Minter keypair not found' },
     DEVICE_NOT_REGISTER: { code: 'ERROR3_002', msg: 'Device not register' },
     DEVICE_NONCE_INVALID: { code: 'ERROR3_003', msg: 'Device nonce invalid' },
+    CONTRACT_NOT_CONFIG: { code: 'ERROR3_004', msg: 'Contract not configured' },
   },
   PROJECT: {
     NOT_FOUND: { code: 'ERROR4_001', msg: 'Project not found' },

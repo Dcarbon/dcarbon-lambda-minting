@@ -15,7 +15,7 @@ import Dcarbon from '@services/dcarbon';
 import { IIotSignatureInput } from '@interfaces/minting';
 
 class MintingService {
-  private MINT_LOOKUP_TABLE = 'FK3zqpvK4oSn5mRxajtURvGBC94ZcADGeipUvhWVG4mu'; // FIXME: hardcode
+  private MINT_LOOKUP_TABLE = process.env.COMMON_MINT_LOOKUP_TABLE;
 
   async triggerMinting(scheduleType: EMintScheduleType): Promise<void> {
     LoggerUtil.process(`Trigger minting [${scheduleType.toUpperCase()}]`);
@@ -38,9 +38,10 @@ class MintingService {
   }
 
   async mintingDevice(signInput: IIotSignatureInput, projectId: string, deviceId: string): Promise<any> {
-    const [{ data: project }, deviceSetting] = await Promise.all([
+    const [{ data: project }, deviceSetting, contractConfig] = await Promise.all([
       Dcarbon.projectDetail(projectId),
       SolanaService.getDeviceSetting(projectId, deviceId),
+      SolanaService.contractSetting(),
     ]);
     if (!deviceSetting)
       throw new MyError(
@@ -88,6 +89,7 @@ class MintingService {
         projectId,
         deviceId,
         deviceSetting.owner,
+        contractConfig.vault,
       );
       await this.syncMintTransaction(connection, signature, txTime, false);
     }
@@ -95,12 +97,19 @@ class MintingService {
   }
 
   async minting(projectId: string, deviceId: string, amount: number, nonce: number, mint_time: number): Promise<any> {
-    const [{ data: project }, deviceSetting] = await Promise.all([
+    const [{ data: project }, deviceSetting, contractConfig] = await Promise.all([
       Dcarbon.projectDetail(projectId),
       SolanaService.getDeviceSetting(projectId, deviceId),
+      SolanaService.contractSetting(),
     ]);
     if (!deviceSetting.is_active || !deviceSetting.device_id) {
       LoggerUtil.info(`Device [${deviceId}] of project [${projectId}] inactive`);
+    } else if (deviceSetting.nonce + 1 !== nonce) {
+      throw new MyError(
+        EHttpStatus.BadRequest,
+        ERROR_CODE.MINTING.DEVICE_NONCE_INVALID.code,
+        ERROR_CODE.MINTING.DEVICE_NONCE_INVALID.msg,
+      );
     } else {
       const singer = await this.getSignerKeypair(deviceSetting.minter.toString());
       const deviceType = IOT_DEVICE_TYPE.find((type) => type.id === deviceSetting.device_type);
@@ -141,21 +150,12 @@ class MintingService {
           nonce: 1,
           signed: 'skN4F+Ebh3ShbfySpMCy+zfyrz8VwYUzdDo6RD+Ed4I8ItawaFZ2MYGSRd/6yXALOeOqsNIzsiOBufCI3shh4xw=',
         },
-        // {
-        //   "id": "19",
-        //   "iotId": "282",
-        //   "nonce": "5",
-        //   "amount": "0xEf3be1",
-        //   "signed": "o7NnsbwdVVV4tWrz5aqxcL/QUX2MOlPZaPReficS8p1zzxsXk67FY98+1P76Plb4mhsAzuHVe24K\nLdPgQMs50hs=",
-        //   "createdAt": "1684744091752",
-        //   "updatedAt": "1684744091752",
-        //   "iot": "0x43b5144bbbbf8340e035c0067e4b8c7dd9761d16"
-        // }
         projectId,
         deviceId,
         amount,
         nonce,
         deviceSetting.owner,
+        contractConfig.vault,
       );
       await this.syncMintTransaction(connection, signature, mint_time, false);
     }

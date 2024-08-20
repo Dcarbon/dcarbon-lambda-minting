@@ -39,11 +39,11 @@ const serverlessConfiguration: AWS = {
       EIP_712_DOMAIN_CHAIN_ID: '${file(./env/env.${opt:stage, "dev"}.json):EIP_712_DOMAIN_CHAIN_ID}',
       EIP_712_DOMAIN_VERIFYING_CONTRACT:
         '${file(./env/env.${opt:stage, "dev"}.json):EIP_712_DOMAIN_VERIFYING_CONTRACT}',
-      EIP_712_ETH_ADDRESS: '${file(./env/env.${opt:stage, "dev"}.json):EIP_712_ETH_ADDRESS}',
       COMMON_SKIP_PREFLIGHT: '${file(./env/env.${opt:stage, "dev"}.json):COMMON_SKIP_PREFLIGHT}',
       COMMON_HELIUS_HOOK_SECRET: '${file(./env/env.${opt:stage, "dev"}.json):COMMON_HELIUS_HOOK_SECRET}',
       COMMON_USDC_ADDRESS: '${file(./env/env.${opt:stage, "dev"}.json):COMMON_USDC_ADDRESS}',
       COMMON_USDT_ADDRESS: '${file(./env/env.${opt:stage, "dev"}.json):COMMON_USDT_ADDRESS}',
+      COMMON_MINT_LOOKUP_TABLE: '${file(./env/env.${opt:stage, "dev"}.json):COMMON_MINT_LOOKUP_TABLE}',
       ENDPOINT_IOT_API: '${file(./env/env.${opt:stage, "dev"}.json):ENDPOINT_IOT_API}',
       ENDPOINT_IPFS_NFT_IMAGE: '${file(./env/env.${opt:stage, "dev"}.json):ENDPOINT_IPFS_NFT_IMAGE}',
       //SSM

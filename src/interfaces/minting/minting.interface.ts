@@ -18,6 +18,10 @@ class OCDeviceSetting {
   nonce: number;
 }
 
+class OCContractSetting {
+  vault: string;
+}
+
 class SignatureVerifyInfo {
   ethAddress: Buffer;
 
@@ -28,4 +32,4 @@ class SignatureVerifyInfo {
   recoveryId: number;
 }
 
-export { OCDeviceSetting, SignatureVerifyInfo };
+export { OCDeviceSetting, SignatureVerifyInfo, OCContractSetting };
