@@ -186,6 +186,60 @@ export type ICarbonContract = {
       args: [];
     },
     {
+      name: 'claimGovernanceToken';
+      discriminator: [134, 46, 152, 25, 49, 79, 52, 32];
+      accounts: [
+        {
+          name: 'signer';
+          writable: true;
+          signer: true;
+        },
+        {
+          name: 'governance';
+          writable: true;
+          pda: {
+            seeds: [
+              {
+                kind: 'const';
+                value: [103, 111, 118, 101, 114, 110, 97, 110, 99, 101];
+              },
+              {
+                kind: 'account';
+                path: 'signer';
+              },
+            ];
+          };
+        },
+        {
+          name: 'tokenMint';
+        },
+        {
+          name: 'authority';
+          pda: {
+            seeds: [
+              {
+                kind: 'const';
+                value: [97, 117, 116, 104, 111, 114, 105, 116, 121];
+              },
+            ];
+          };
+        },
+        {
+          name: 'tokenAtaSender';
+          writable: true;
+        },
+        {
+          name: 'tokenAtaReceiver';
+          writable: true;
+        },
+        {
+          name: 'tokenProgram';
+          address: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA';
+        },
+      ];
+      args: [];
+    },
+    {
       name: 'createCollection';
       discriminator: [156, 251, 92, 54, 233, 2, 16, 82];
       accounts: [
@@ -421,6 +475,9 @@ export type ICarbonContract = {
         },
         {
           name: 'mint';
+        },
+        {
+          name: 'governanceMint';
         },
         {
           name: 'systemProgram';
@@ -668,6 +725,7 @@ export type ICarbonContract = {
         },
         {
           name: 'governance';
+          writable: true;
           pda: {
             seeds: [
               {
@@ -709,6 +767,13 @@ export type ICarbonContract = {
           writable: true;
         },
         {
+          name: 'vault';
+        },
+        {
+          name: 'vaultAta';
+          writable: true;
+        },
+        {
           name: 'deviceStatus';
           writable: true;
           pda: {
@@ -746,6 +811,7 @@ export type ICarbonContract = {
         },
         {
           name: 'tokenProgram';
+          address: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA';
         },
         {
           name: 'systemProgram';
@@ -753,13 +819,14 @@ export type ICarbonContract = {
         },
         {
           name: 'sysvarProgram';
-          address: 'Sysvar1nstructions1111111111111111111111111';
         },
         {
-          name: 'tokenMetadataProgram';
+          name: 'tokenMetadassociatedTokenProgram';
+          address: 'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s';
         },
         {
-          name: 'ataProgram';
+          name: 'associatedTokenProgram';
+          address: 'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL';
         },
       ];
       args: [
@@ -837,6 +904,17 @@ export type ICarbonContract = {
               {
                 kind: 'arg';
                 path: 'register_device_args.device_id';
+              },
+            ];
+          };
+        },
+        {
+          name: 'contractConfig';
+          pda: {
+            seeds: [
+              {
+                kind: 'const';
+                value: [99, 111, 110, 116, 114, 97, 99, 116, 95, 99, 111, 110, 102, 105, 103];
               },
             ];
           };
@@ -1269,8 +1347,7 @@ export type ICarbonContract = {
     },
     {
       code: 6001;
-      name: 'invalidProjectIdLength';
-      msg: 'The length of the device Id must be equal to 24';
+      name: 'invalidProjectId';
     },
     {
       code: 6002;
@@ -1304,7 +1381,6 @@ export type ICarbonContract = {
     {
       code: 6008;
       name: 'invalidNonce';
-      msg: '';
     },
     {
       code: 6009;
@@ -1321,6 +1397,30 @@ export type ICarbonContract = {
     {
       code: 6012;
       name: 'invalidAmount';
+    },
+    {
+      code: 6013;
+      name: 'invalidValue';
+    },
+    {
+      code: 6014;
+      name: 'invalidStringLength';
+    },
+    {
+      code: 6015;
+      name: 'invalidNumber';
+    },
+    {
+      code: 6016;
+      name: 'invalidDeviceId';
+    },
+    {
+      code: 6017;
+      name: 'invalidDeviceType';
+    },
+    {
+      code: 6018;
+      name: 'dontHaveEnoughAmountToClaim';
     },
   ];
   types: [
@@ -1409,6 +1509,10 @@ export type ICarbonContract = {
             name: 'governanceAmount';
             type: 'f64';
           },
+          {
+            name: 'vault';
+            type: 'pubkey';
+          },
         ];
       };
     },
@@ -1442,6 +1546,10 @@ export type ICarbonContract = {
           {
             name: 'governanceAmount';
             type: 'f64';
+          },
+          {
+            name: 'vault';
+            type: 'pubkey';
           },
         ];
       };
@@ -1545,6 +1653,10 @@ export type ICarbonContract = {
       type: {
         kind: 'struct';
         fields: [
+          {
+            name: 'mint';
+            type: 'pubkey';
+          },
           {
             name: 'owner';
             type: 'pubkey';

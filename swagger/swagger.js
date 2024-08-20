@@ -60,6 +60,38 @@
         }
       }
     },
+    "/v1/minting/device": {
+      "post": {
+        "summary": "Trigger Minting Carbon by Device",
+        "description": "",
+        "tags": [
+          "MINTING"
+        ],
+        "operationId": "deviceMinting.post./v1/minting/device",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Body required in the request",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/IDeviceMintingBody"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200 response"
+          }
+        }
+      }
+    },
     "/v1/minting/trigger": {
       "post": {
         "summary": "Trigger Minting Carbon",
@@ -194,6 +226,25 @@
       ],
       "additionalProperties": false,
       "title": "IMintingBody",
+      "type": "object"
+    },
+    "IDeviceMintingBody": {
+      "properties": {
+        "device_id": {
+          "title": "IDeviceMintingBody.device_id",
+          "type": "number"
+        },
+        "project_id": {
+          "title": "IDeviceMintingBody.project_id",
+          "type": "number"
+        }
+      },
+      "required": [
+        "device_id",
+        "project_id"
+      ],
+      "additionalProperties": false,
+      "title": "IDeviceMintingBody",
       "type": "object"
     },
     "ITriggerMintingBody": {

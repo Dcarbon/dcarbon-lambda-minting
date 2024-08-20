@@ -17,6 +17,13 @@ interface ITriggerMintingInput extends ICommonRequest {
   };
 }
 
+interface IDeviceMintingInput extends ICommonRequest {
+  body: {
+    device_id: number;
+    project_id: number;
+  };
+}
+
 interface IMetadataAttribute {
   trait_type: string;
   value: string;
@@ -41,4 +48,4 @@ interface IIotSignatureInput {
   signed: string;
 }
 
-export { IMintingInput, ICreateMetadataInput, IIotSignatureInput, ITriggerMintingInput };
+export { IMintingInput, ICreateMetadataInput, IIotSignatureInput, ITriggerMintingInput, IDeviceMintingInput };

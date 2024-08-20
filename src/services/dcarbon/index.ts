@@ -1,5 +1,5 @@
 import { ServiceResponse } from '@interfaces/commons';
-import { IotProject } from '@services/dcarbon/dcarbon.interface';
+import { IotProject, IotSign } from '@services/dcarbon/dcarbon.interface';
 import Api from '@services/api';
 import { IOT_API } from '@constants/iot.constant';
 import MyError from '@exceptions/my_error.exception';
@@ -19,6 +19,25 @@ class DCarbonService {
     });
     if (!result || !result.id)
       throw new MyError(EHttpStatus.BadRequest, ERROR_CODE.PROJECT.NOT_FOUND.code, ERROR_CODE.PROJECT.NOT_FOUND.msg);
+    return {
+      data: result,
+    };
+  }
+
+  async latestDeviceSign(deviceId: string): Promise<ServiceResponse<IotSign>> {
+    const result = await Api.get<any, IotSign>({
+      url: `${this.ENDPOINT_IOT_API}${IOT_API.IOT_OP.ROOT}${IOT_API.IOT_OP.MINT_SIGN_LATEST.replace('{deviceId}', deviceId)}`,
+      cls: IotSign,
+      plainToClass: true,
+      byPassError: true,
+      type: 'iot_api',
+    });
+    if (!result || !result.id)
+      throw new MyError(
+        EHttpStatus.BadRequest,
+        ERROR_CODE.IOT_OP.SIGN_NOT_FOUND.code,
+        ERROR_CODE.IOT_OP.SIGN_NOT_FOUND.msg,
+      );
     return {
       data: result,
     };

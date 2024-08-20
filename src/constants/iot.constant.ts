@@ -9,6 +9,10 @@ const IOT_API = {
   DEVICE: {
     ROOT: '/iots',
   },
+  IOT_OP: {
+    ROOT: '/iot-op',
+    MINT_SIGN_LATEST: '/mint-sign/{deviceId}/latest',
+  },
 };
 
 const IOT_DEVICE_TYPE: IIotDeviceType[] = [

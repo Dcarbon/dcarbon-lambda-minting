@@ -1,5 +1,5 @@
 import { getTokenPrice, health } from '@functions/common';
-import { minting, triggerMinting } from '@functions/minting';
+import { deviceMinting, minting, triggerMinting } from '@functions/minting';
 import { syncTxHelius } from '@functions/hook';
 import type { AWS } from '@serverless/typescript';
 
@@ -61,6 +61,7 @@ const serverlessConfiguration: AWS = {
   functions: {
     health,
     minting,
+    deviceMinting,
     triggerMinting,
     syncTxHelius,
     getTokenPrice,

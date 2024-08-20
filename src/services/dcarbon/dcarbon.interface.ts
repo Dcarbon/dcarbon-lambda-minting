@@ -92,4 +92,22 @@ class IotCommonResponse<T> {
   data: T;
 }
 
-export { IotProject, IotCommonResponse, IotDevice };
+class IotSign {
+  id: string;
+
+  iotId: string;
+
+  nonce: string;
+
+  amount: string;
+
+  signed: string;
+
+  createdAt: string;
+
+  updatedAt: string;
+
+  iot: string;
+}
+
+export { IotProject, IotCommonResponse, IotDevice, IotSign };

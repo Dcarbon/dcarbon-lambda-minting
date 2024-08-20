@@ -1,4 +1,4 @@
-import { AddressLookupTableProgram, Connection, Keypair, PublicKey } from '@solana/web3.js';
+import { AddressLookupTableProgram, Connection, Keypair, PublicKey, SYSVAR_INSTRUCTIONS_PUBKEY } from '@solana/web3.js';
 import { BN, IdlTypes, Program, web3 } from '@coral-xyz/anchor';
 import {
   CreateArgsArgs,
@@ -16,6 +16,9 @@ import { sendTx, u16ToBytes } from '@utils/transaction.util';
 import { getPythClusterApiUrl, getPythProgramKeyForCluster, PriceStatus, PythHttpClient } from '@pythnetwork/client';
 import Ssm from '@services/aws/ssm';
 import Arweave from '@services/arweave';
+import MyError from '@exceptions/my_error.exception';
+import { EHttpStatus } from '@enums/http.enum';
+import { ERROR_CODE } from '@constants/error.constant';
 import { ICarbonContract } from '../../contracts/carbon/carbon.interface';
 import { CARBON_IDL } from '../../contracts/carbon/carbon.idl';
 import {
@@ -58,7 +61,17 @@ class SolanaService {
       [Buffer.from('device'), new BN(Number(projectId)).toBuffer('le', 2), new BN(Number(deviceId)).toBuffer('le', 2)],
       this.program.programId,
     );
-    const device = await this.program.account.device.fetch(deviceSettingProgram);
+    let device: any | undefined;
+    try {
+      device = await this.program.account.device.fetch(deviceSettingProgram);
+    } catch (e) {
+      LoggerUtil.error(e.stack);
+      throw new MyError(
+        EHttpStatus.BadRequest,
+        ERROR_CODE.MINTING.DEVICE_NOT_REGISTER.code,
+        ERROR_CODE.MINTING.DEVICE_NOT_REGISTER.msg,
+      );
+    }
     if (device && device.id) {
       ocDeviceSetting.device_id = device.id;
       ocDeviceSetting.project_id = device.projectId;
@@ -110,7 +123,7 @@ class SolanaService {
       [Buffer.from('metadata'), this.TOKEN_METADATA_PROGRAM_ID.toBuffer(), mint.publicKey.toBuffer()],
       this.TOKEN_METADATA_PROGRAM_ID,
     );
-
+    const vault = new PublicKey('6S4VHTNaKjNvTV7dYUkTMfdWWTuXu8jw3kHGvtpruWJi'); // FIXME: hardcode
     const createArgsVec: CreateArgsArgs = {
       __kind: 'V1',
       name: input.name,
@@ -128,6 +141,11 @@ class SolanaService {
     const ownerAta = associatedAddress({
       mint: mint.publicKey,
       owner: owner,
+    });
+
+    const vaultAta = associatedAddress({
+      mint: mint.publicKey,
+      owner: vault,
     });
 
     const mintSftArgs: MintSftArgs = {
@@ -162,13 +180,13 @@ class SolanaService {
       .mintSft(mintSftArgs, verifyMessageArgs)
       .accounts({
         signer: minter.publicKey,
+        vaultAta: vaultAta,
         deviceOwner: owner,
+        vault: vault,
         ownerAta: ownerAta,
         mint: mint.publicKey,
         metadata: metadata,
-        tokenProgram: TOKEN_PROGRAM_ID,
-        tokenMetadataProgram: this.TOKEN_METADATA_PROGRAM_ID,
-        ataProgram: ASSOCIATED_PROGRAM_ID,
+        sysvarProgram: SYSVAR_INSTRUCTIONS_PUBKEY,
       })
       .remainingAccounts([
         {
@@ -192,6 +210,116 @@ class SolanaService {
     return {
       connection: this.connection,
       signature: tx,
+    };
+  }
+
+  async mintDeviceSNFT(
+    lookupTable: string,
+    minter: Keypair,
+    input: ICreateMetadataInput,
+    signatureInput: IIotSignatureInput,
+    projectId: string,
+    deviceId: string,
+    owner: PublicKey,
+  ): Promise<{ connection: Connection; signature: string; txTime: number }> {
+    LoggerUtil.info('Minting SNFT with metadata: ' + JSON.stringify(input));
+    const minterBalance = await this.connection.getBalance(minter.publicKey);
+    LoggerUtil.info(`Minter balance: ${minterBalance}`);
+    const uri = await Arweave.uploadMetadata(JSON.stringify(input), 'application/json');
+    const mint = Keypair.generate();
+    const decimals = 1;
+    const [metadata] = PublicKey.findProgramAddressSync(
+      [Buffer.from('metadata'), this.TOKEN_METADATA_PROGRAM_ID.toBuffer(), mint.publicKey.toBuffer()],
+      this.TOKEN_METADATA_PROGRAM_ID,
+    );
+    const vault = new PublicKey('6S4VHTNaKjNvTV7dYUkTMfdWWTuXu8jw3kHGvtpruWJi'); // FIXME: hardcode
+    const createArgsVec: CreateArgsArgs = {
+      __kind: 'V1',
+      name: input.name,
+      symbol: input.symbol,
+      uri,
+      sellerFeeBasisPoints: percentAmount(5.5),
+      decimals: some(decimals),
+      creators: null,
+      tokenStandard: TokenStandard.FungibleAsset,
+    };
+
+    const serialize1 = getCreateArgsSerializer();
+    const data1 = serialize1.serialize(createArgsVec);
+
+    const ownerAta = associatedAddress({
+      mint: mint.publicKey,
+      owner: owner,
+    });
+
+    const vaultAta = associatedAddress({
+      mint: mint.publicKey,
+      owner: vault,
+    });
+
+    const mintSftArgs: MintSftArgs = {
+      projectId: Number(projectId),
+      deviceId: Number(deviceId),
+      createMintDataVec: Buffer.from(data1),
+      totalAmount: 1,
+      nonce: signatureInput.nonce,
+    };
+
+    const verifyInfo = await this.createSignatureVerifyInfo(signatureInput);
+    const eth_address = process.env.EIP_712_ETH_ADDRESS;
+    const ethAddress = ethers.utils.arrayify('0x' + eth_address);
+    const verifyMessageArgs: VerifyMessageArgs = {
+      msg: verifyInfo.message,
+      recoveryId: verifyInfo.recoveryId,
+      sig: Array.from(verifyInfo.signature),
+      ethAddress: Array.from(ethAddress),
+    };
+    const [device] = PublicKey.findProgramAddressSync(
+      [Buffer.from('device'), Buffer.from(u16ToBytes(Number(projectId))), Buffer.from(u16ToBytes(Number(deviceId)))],
+      this.program.programId,
+    );
+    const ins0 = web3.Secp256k1Program.createInstructionWithEthAddress({
+      ethAddress: ethAddress,
+      message: verifyInfo.message,
+      signature: verifyInfo.signature,
+      recoveryId: verifyInfo.recoveryId,
+    });
+
+    const ins1 = await this.program.methods
+      .mintSft(mintSftArgs, verifyMessageArgs)
+      .accounts({
+        signer: minter.publicKey,
+        vaultAta: vaultAta,
+        deviceOwner: owner,
+        vault: vault,
+        ownerAta: ownerAta,
+        mint: mint.publicKey,
+        metadata: metadata,
+        sysvarProgram: SYSVAR_INSTRUCTIONS_PUBKEY,
+      })
+      .remainingAccounts([
+        {
+          pubkey: device,
+          isSigner: false,
+          isWritable: false,
+        },
+      ])
+      .instruction();
+    const lookupTableAccount = (await this.connection.getAddressLookupTable(new PublicKey(lookupTable))).value;
+    const { tx, status } = await sendTx({
+      connection: this.connection,
+      signers: [minter, mint],
+      arrTxInstructions: [ins0, ins1],
+      payerKey: minter.publicKey,
+      lookupTableAccount: lookupTableAccount,
+    });
+    if (status === 'error') {
+      throw new Error(tx);
+    }
+    return {
+      connection: this.connection,
+      signature: tx,
+      txTime: new Date().getTime(),
     };
   }
 

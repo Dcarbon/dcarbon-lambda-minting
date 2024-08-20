@@ -15,9 +15,14 @@ const ERROR_CODE = {
   },
   MINTING: {
     MINTER_KEYPAIR_NOT_FOUND: { code: 'ERROR3_001', msg: 'Minter keypair not found' },
+    DEVICE_NOT_REGISTER: { code: 'ERROR3_002', msg: 'Device not register' },
+    DEVICE_NONCE_INVALID: { code: 'ERROR3_003', msg: 'Device nonce invalid' },
   },
   PROJECT: {
     NOT_FOUND: { code: 'ERROR4_001', msg: 'Project not found' },
+  },
+  IOT_OP: {
+    SIGN_NOT_FOUND: { code: 'ERROR5_001', msg: 'Sign not found' },
   },
 };
 

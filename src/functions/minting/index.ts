@@ -16,6 +16,20 @@ export const minting = {
     },
   ],
 };
+export const deviceMinting = {
+  handler: `${handlerPath(__dirname)}/handler.DeviceMintingFn`,
+  events: [
+    {
+      httpApi: {
+        method: 'post',
+        path: `${PREFIX}/device`,
+        summary: 'Trigger Minting Carbon by Device',
+        swaggerTags: ['MINTING'],
+        bodyType: 'IDeviceMintingBody',
+      },
+    },
+  ],
+};
 export const triggerMinting = {
   handler: `${handlerPath(__dirname)}/handler.TriggerMintingFn`,
   events: [

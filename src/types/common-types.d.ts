@@ -14,6 +14,11 @@ export interface IMintingBody {
   project_id: string;
 }
 
+export interface IDeviceMintingBody {
+  device_id: number;
+  project_id: number;
+}
+
 type TMintScheduleType = Record<EMintScheduleType, string>;
 
 export interface ITriggerMintingBody {
