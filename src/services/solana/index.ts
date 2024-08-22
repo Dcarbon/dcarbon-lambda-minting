@@ -183,7 +183,7 @@ class SolanaService {
       projectId: Number(projectId),
       deviceId: Number(deviceId),
       createMintDataVec: Buffer.from(data1),
-      totalAmount: Number(amount.toFixed(decimals)), // FIXME: hardcode
+      totalAmount: amount, // FIXME: hardcode
       nonce: Number(nonce),
     };
 
