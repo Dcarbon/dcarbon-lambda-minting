@@ -60,7 +60,7 @@ class MintingService {
         singer,
         {
           name: `CARBON ${deviceId}-${signInput.nonce}`,
-          symbol: `DC02`,
+          symbol: `DCO2`,
           image: `${process.env.ENDPOINT_IPFS_NFT_IMAGE}`,
           attributes: [
             {
@@ -119,7 +119,7 @@ class MintingService {
         singer,
         {
           name: `CARBON ${deviceId}-${nonce}`,
-          symbol: `DC02`,
+          symbol: `DCO2`,
           image: `${process.env.ENDPOINT_IPFS_NFT_IMAGE}`,
           attributes: [
             {

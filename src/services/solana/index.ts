@@ -149,7 +149,7 @@ class SolanaService {
     LoggerUtil.info(`Minter balance: ${minterBalance}`);
     const uri = await Arweave.uploadMetadata(JSON.stringify(input), 'application/json');
     const mint = Keypair.generate();
-    const decimals = 1;
+    const decimals = 2;
     const [metadata] = PublicKey.findProgramAddressSync(
       [Buffer.from('metadata'), this.TOKEN_METADATA_PROGRAM_ID.toBuffer(), mint.publicKey.toBuffer()],
       this.TOKEN_METADATA_PROGRAM_ID,
@@ -183,7 +183,7 @@ class SolanaService {
       projectId: Number(projectId),
       deviceId: Number(deviceId),
       createMintDataVec: Buffer.from(data1),
-      totalAmount: amount, // FIXME: hardcode
+      totalAmount: Number(amount.toFixed(decimals)), // FIXME: hardcode
       nonce: Number(nonce),
     };
 
@@ -259,7 +259,7 @@ class SolanaService {
     LoggerUtil.info(`Minter balance: ${minterBalance}`);
     const uri = await Arweave.uploadMetadata(JSON.stringify(input), 'application/json');
     const mint = Keypair.generate();
-    const decimals = 1;
+    const decimals = 2;
     const [metadata] = PublicKey.findProgramAddressSync(
       [Buffer.from('metadata'), this.TOKEN_METADATA_PROGRAM_ID.toBuffer(), mint.publicKey.toBuffer()],
       this.TOKEN_METADATA_PROGRAM_ID,
@@ -293,7 +293,7 @@ class SolanaService {
       projectId: Number(projectId),
       deviceId: Number(deviceId),
       createMintDataVec: Buffer.from(data1),
-      totalAmount: Number.parseInt(signatureInput.amount),
+      totalAmount: Number(Number.parseInt(signatureInput.amount).toFixed(decimals)),
       nonce: signatureInput.nonce,
     };
 
