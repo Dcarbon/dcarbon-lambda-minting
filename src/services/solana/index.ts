@@ -149,7 +149,7 @@ class SolanaService {
     LoggerUtil.info(`Minter balance: ${minterBalance}`);
     const uri = await Arweave.uploadMetadata(JSON.stringify(input), 'application/json');
     const mint = Keypair.generate();
-    const decimals = 2;
+    const decimals = 1;
     const [metadata] = PublicKey.findProgramAddressSync(
       [Buffer.from('metadata'), this.TOKEN_METADATA_PROGRAM_ID.toBuffer(), mint.publicKey.toBuffer()],
       this.TOKEN_METADATA_PROGRAM_ID,
@@ -259,7 +259,7 @@ class SolanaService {
     LoggerUtil.info(`Minter balance: ${minterBalance}`);
     const uri = await Arweave.uploadMetadata(JSON.stringify(input), 'application/json');
     const mint = Keypair.generate();
-    const decimals = 2;
+    const decimals = 1;
     const [metadata] = PublicKey.findProgramAddressSync(
       [Buffer.from('metadata'), this.TOKEN_METADATA_PROGRAM_ID.toBuffer(), mint.publicKey.toBuffer()],
       this.TOKEN_METADATA_PROGRAM_ID,
