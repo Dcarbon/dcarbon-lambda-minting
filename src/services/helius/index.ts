@@ -6,9 +6,11 @@ import LoggerUtil from '@utils/logger.util';
 import HistoryService from '@services/history';
 import { ParsedTransactionWithMeta } from '@solana/web3.js';
 import Solana from '@services/solana';
+import { EMintingStatus } from '@enums/minting.enum';
 import { MarketTransactionHistoryEntity } from '../../entities/market_history.entity';
 import { TTokenPythPrice } from '../../interfaces/commons';
 import { MintHistoryEntity } from '../../entities/mint_history.entity';
+import { BurnHistoryEntity } from '../../entities/burn_history.entity';
 
 class HeliusService {
   private BUY_TOKEN_MAP: { [key: string]: TTokenPythPrice } = {
@@ -26,6 +28,7 @@ class HeliusService {
       );
     const inputs: MarketTransactionHistoryEntity[] = [];
     const mintInputs: MintHistoryEntity[] = [];
+    const burnHistoryInputs: BurnHistoryEntity[] = [];
     await Promise.all(
       rawTxs.map(async (transaction) => {
         let signature = 'UNKNOWN';
@@ -34,6 +37,7 @@ class HeliusService {
           if (logs) {
             const buyInfoLog = logs.filter((log) => log.indexOf('Program log: buy_info-') === 0);
             const mintInfoLog = logs.filter((log) => log.indexOf('Program log: Instruction: MintNft') === 0);
+            const burnInfoLog = logs.filter((log) => log.indexOf('Program log: Instruction: BurnSft') === 0);
             signature = transaction.transaction?.signatures[0];
             if (buyInfoLog && buyInfoLog.length > 0) {
               LoggerUtil.process(`Helius sync BUY tx [${signature}]`);
@@ -86,6 +90,8 @@ class HeliusService {
                 tx_time: transaction.blockTime ? new Date(transaction.blockTime * 1000) : null,
                 created_by: 'LAMBDA',
               });
+            } else if (burnInfoLog && burnInfoLog.length > 0) {
+              await this.burnHistories(burnHistoryInputs, transaction);
             }
           }
         } catch (e) {
@@ -95,6 +101,24 @@ class HeliusService {
     );
     if (inputs.length > 0) await HistoryService.createMarketTxHistory(inputs);
     if (mintInputs.length > 0) await HistoryService.createMintHistory(mintInputs);
+    if (burnHistoryInputs.length > 0) await HistoryService.createBurnHistory(burnHistoryInputs);
+  }
+
+  async burnHistories(inputs: BurnHistoryEntity[], transaction: ParsedTransactionWithMeta): Promise<void> {
+    const signature = transaction.transaction?.signatures[0];
+    inputs.push({
+      signature: signature,
+      burner: transaction.transaction.message.accountKeys[0].pubkey.toString(),
+      mints: (transaction?.meta?.postTokenBalances || []).map((info) => info.mint),
+      amount: (transaction?.meta?.postTokenBalances || []).reduce(
+        (partialSum, info) => Big(partialSum).plus(Big(info.uiTokenAmount.uiAmount)).toNumber(),
+        0,
+      ),
+      mint_status: EMintingStatus.MINTING,
+      created_by: 'LAMBDA',
+      block_hash: transaction.transaction.message.recentBlockhash,
+      tx_time: transaction.blockTime ? new Date(transaction.blockTime * 1000) : null,
+    });
   }
 }
 

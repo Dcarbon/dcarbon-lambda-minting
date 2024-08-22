@@ -4,6 +4,7 @@ import { DeviceTransactionHistoryEntity } from '../entities/device_transaction_h
 import { MintingScheduleEntity } from '../entities/minting_schedule.entity';
 import { MarketTransactionHistoryEntity } from '../entities/market_history.entity';
 import { MintHistoryEntity } from '../entities/mint_history.entity';
+import { BurnHistoryEntity } from '../entities/burn_history.entity';
 
 class DatasourceManager {
   public manager: EntityManager;
@@ -23,6 +24,7 @@ class DatasourceManager {
         MintingScheduleEntity,
         MarketTransactionHistoryEntity,
         MintHistoryEntity,
+        BurnHistoryEntity,
       ],
     });
     try {

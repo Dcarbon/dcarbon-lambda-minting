@@ -2,6 +2,7 @@ import DatasourceManager from '../../db/datasource';
 import { DeviceTransactionHistoryEntity } from '../../entities/device_transaction_history.entity';
 import { MarketTransactionHistoryEntity } from '../../entities/market_history.entity';
 import { MintHistoryEntity } from '../../entities/mint_history.entity';
+import { BurnHistoryEntity } from '../../entities/burn_history.entity';
 
 class HistoryService {
   async getAllDeviceTxHistories(): Promise<DeviceTransactionHistoryEntity[]> {
@@ -31,6 +32,15 @@ class HistoryService {
   async createMintHistory(data: MintHistoryEntity | MintHistoryEntity[]): Promise<void> {
     const manager = await DatasourceManager.initialize();
     await manager.upsert(MintHistoryEntity, data, {
+      upsertType: 'on-conflict-do-update',
+      skipUpdateIfNoValuesChanged: true,
+      conflictPaths: ['signature'],
+    });
+  }
+
+  async createBurnHistory(data: BurnHistoryEntity | BurnHistoryEntity[]): Promise<void> {
+    const manager = await DatasourceManager.initialize();
+    await manager.upsert(BurnHistoryEntity, data, {
       upsertType: 'on-conflict-do-update',
       skipUpdateIfNoValuesChanged: true,
       conflictPaths: ['signature'],
