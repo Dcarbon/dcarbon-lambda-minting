@@ -108,9 +108,9 @@ class HeliusService {
     const signature = transaction.transaction?.signatures[0];
     inputs.push({
       signature: signature,
-      burner: transaction.transaction.message.accountKeys[0].pubkey.toString(),
-      mints: (transaction?.meta?.postTokenBalances || []).map((info) => info.mint),
-      amount: (transaction?.meta?.postTokenBalances || []).reduce(
+      burner: transaction.transaction.message.accountKeys[0] as unknown as string,
+      mints: (transaction?.meta?.preTokenBalances || []).map((info) => info.mint),
+      amount: (transaction?.meta?.preTokenBalances || []).reduce(
         (partialSum, info) => Big(partialSum).plus(Big(info.uiTokenAmount.uiAmount)).toNumber(),
         0,
       ),
