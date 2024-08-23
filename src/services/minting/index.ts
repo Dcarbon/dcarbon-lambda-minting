@@ -59,7 +59,7 @@ class MintingService {
         this.MINT_LOOKUP_TABLE,
         singer,
         {
-          name: `CARBON ${deviceId}-${signInput.nonce}`,
+          name: `DC ${deviceId}-${signInput.nonce}`,
           symbol: `DCO2`,
           image: `${process.env.ENDPOINT_IPFS_NFT_IMAGE}`,
           attributes: [
@@ -118,7 +118,7 @@ class MintingService {
         this.MINT_LOOKUP_TABLE,
         singer,
         {
-          name: `CARBON ${deviceId}-${nonce}`,
+          name: `DCO2 ${deviceId}-${nonce}`,
           symbol: `DCO2`,
           image: `${process.env.ENDPOINT_IPFS_NFT_IMAGE}`,
           attributes: [
