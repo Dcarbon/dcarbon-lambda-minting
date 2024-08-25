@@ -10,6 +10,12 @@ class BurnHistoryEntity {
   signature: string;
 
   @Column({ type: 'varchar', nullable: true })
+  mint_signature?: string;
+
+  @Column({ type: 'varchar', nullable: true })
+  group_signature?: string;
+
+  @Column({ type: 'varchar', nullable: true })
   block_hash?: string;
 
   @Column({ type: 'varchar', nullable: false })
@@ -23,7 +29,7 @@ class BurnHistoryEntity {
   amount: number;
 
   @Column({ type: 'enum', enum: EMintingStatus, default: EMintingStatus.MINTING })
-  mint_status: EMintingStatus;
+  mint_status?: EMintingStatus;
 
   @Column({ type: 'jsonb', nullable: true })
   metadata?: any;

@@ -6,7 +6,6 @@ import LoggerUtil from '@utils/logger.util';
 import HistoryService from '@services/history';
 import { ParsedTransactionWithMeta } from '@solana/web3.js';
 import Solana from '@services/solana';
-import { EMintingStatus } from '@enums/minting.enum';
 import { MarketTransactionHistoryEntity } from '../../entities/market_history.entity';
 import { TTokenPythPrice } from '../../interfaces/commons';
 import { MintHistoryEntity } from '../../entities/mint_history.entity';
@@ -114,9 +113,9 @@ class HeliusService {
         (partialSum, info) => Big(partialSum).plus(Big(info.uiTokenAmount.uiAmount)).toNumber(),
         0,
       ),
-      mint_status: EMintingStatus.MINTING,
       created_by: 'LAMBDA',
       block_hash: transaction.transaction.message.recentBlockhash,
+      group_signature: transaction.transaction.message.recentBlockhash,
       tx_time: transaction.blockTime ? new Date(transaction.blockTime * 1000) : null,
     });
   }
