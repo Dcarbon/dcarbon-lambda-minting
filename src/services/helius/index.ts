@@ -6,10 +6,10 @@ import LoggerUtil from '@utils/logger.util';
 import HistoryService from '@services/history';
 import { ParsedTransactionWithMeta } from '@solana/web3.js';
 import Solana from '@services/solana';
-import { MarketTransactionHistoryEntity } from '../../entities/market_history.entity';
-import { TTokenPythPrice } from '../../interfaces/commons';
-import { MintHistoryEntity } from '../../entities/mint_history.entity';
-import { BurnHistoryEntity } from '../../entities/burn_history.entity';
+import { TTokenPythPrice } from '@interfaces/commons';
+import { MarketTransactionHistoryEntity } from '@entities/market_history.entity';
+import { MintHistoryEntity } from '@entities/mint_history.entity';
+import { BurnHistoryEntity } from '@entities/burn_history.entity';
 
 class HeliusService {
   private BUY_TOKEN_MAP: { [key: string]: TTokenPythPrice } = {
@@ -105,14 +105,19 @@ class HeliusService {
 
   async burnHistories(inputs: BurnHistoryEntity[], transaction: ParsedTransactionWithMeta): Promise<void> {
     const signature = transaction.transaction?.signatures[0];
+    const preMount = (transaction?.meta?.preTokenBalances || []).reduce(
+      (partialSum, info) => Big(partialSum).plus(Big(info.uiTokenAmount.uiAmount)).toNumber(),
+      0,
+    );
+    const postMount = (transaction?.meta?.postTokenBalances || []).reduce(
+      (partialSum, info) => Big(partialSum).plus(Big(info.uiTokenAmount.uiAmount)).toNumber(),
+      0,
+    );
     inputs.push({
       signature: signature,
       burner: transaction.transaction.message.accountKeys[0] as unknown as string,
       mints: (transaction?.meta?.preTokenBalances || []).map((info) => info.mint),
-      amount: (transaction?.meta?.preTokenBalances || []).reduce(
-        (partialSum, info) => Big(partialSum).plus(Big(info.uiTokenAmount.uiAmount)).toNumber(),
-        0,
-      ),
+      amount: Big(preMount).minus(Big(postMount)).toNumber(),
       created_by: 'LAMBDA',
       block_hash: transaction.transaction.message.recentBlockhash,
       group_signature: transaction.transaction.message.recentBlockhash,
