@@ -259,12 +259,15 @@ class SolanaService {
     owner: PublicKey,
     collectFee: string,
   ): Promise<{ connection: Connection; signature: string; txTime: number }> {
-    LoggerUtil.info('Minting SNFT with metadata: ' + JSON.stringify(input));
-    const minterBalance = await this.connection.getBalance(minter.publicKey);
-    LoggerUtil.info(`Minter balance: ${minterBalance}`);
+    const decimals = 2;
+    const amount = Number(Number.parseInt(signatureInput.amount).toFixed(decimals));
+    if (amount < 0.01) {
+      LoggerUtil.warning(`Device [${deviceId}] of project [${projectId}] not enough amount`);
+      return;
+    }
+    LoggerUtil.process(`Minting [${amount}] sFT of device [${deviceId}] with nonce ${signatureInput.nonce}`);
     const uri = await Arweave.uploadMetadata(JSON.stringify(input), 'application/json');
     const mint = Keypair.generate();
-    const decimals = 1;
     const [metadata] = PublicKey.findProgramAddressSync(
       [Buffer.from('metadata'), this.TOKEN_METADATA_PROGRAM_ID.toBuffer(), mint.publicKey.toBuffer()],
       this.TOKEN_METADATA_PROGRAM_ID,

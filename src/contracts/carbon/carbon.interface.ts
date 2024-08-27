@@ -181,6 +181,30 @@ export type ICarbonContract = {
         {
           name: 'tokenListingInfo';
           writable: true;
+          pda: {
+            seeds: [
+              {
+                kind: 'const';
+                value: [115, 101, 108, 102];
+              },
+              {
+                kind: 'account';
+                path: 'signer';
+              },
+              {
+                kind: 'account';
+                path: 'mint';
+              },
+            ];
+          };
+        },
+        {
+          name: 'tokenProgram';
+          address: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA';
+        },
+        {
+          name: 'sourceAta';
+          writable: true;
         },
       ];
       args: [];
@@ -1204,6 +1228,17 @@ export type ICarbonContract = {
           signer: true;
         },
         {
+          name: 'contractConfig';
+          pda: {
+            seeds: [
+              {
+                kind: 'const';
+                value: [99, 111, 110, 116, 114, 97, 99, 116, 95, 99, 111, 110, 102, 105, 103];
+              },
+            ];
+          };
+        },
+        {
           name: 'burnAta';
           writable: true;
         },
@@ -1241,6 +1276,7 @@ export type ICarbonContract = {
         },
         {
           name: 'tokenProgram';
+          address: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA';
         },
         {
           name: 'systemProgram';
@@ -1251,19 +1287,17 @@ export type ICarbonContract = {
         },
         {
           name: 'tokenMetadataProgram';
+          address: 'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s';
         },
         {
           name: 'ataProgram';
+          address: 'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL';
         },
       ];
       args: [
         {
-          name: 'burnDataVec';
-          type: 'bytes';
-        },
-        {
-          name: 'mintDataVec';
-          type: 'bytes';
+          name: 'burnAmount';
+          type: 'f64';
         },
       ];
     },

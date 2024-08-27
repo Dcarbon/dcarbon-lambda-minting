@@ -19,6 +19,11 @@ class Logger {
     console.error('[ERROR]', message);
   }
 
+  warning(message: any) {
+    // eslint-disable-next-line no-console
+    console.error('[WARNING]', message);
+  }
+
   process(message: any) {
     // eslint-disable-next-line no-console
     console.info('[PROCESSING]', message);
