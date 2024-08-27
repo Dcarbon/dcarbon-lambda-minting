@@ -11,7 +11,7 @@ const serverlessConfiguration: AWS = {
   provider: {
     name: 'aws',
     stage: '${opt:stage}',
-    timeout: 900,
+    timeout: 30,
     runtime: 'nodejs18.x',
     region: 'ap-southeast-1',
     apiGateway: {
