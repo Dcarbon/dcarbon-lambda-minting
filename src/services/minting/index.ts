@@ -198,7 +198,7 @@ class MintingService {
         this.MINT_LOOKUP_TABLE,
         minter,
         {
-          name: `DC ${deviceId}-${signatureInput.nonce}`,
+          name: `DCO2 ${deviceId}-${signatureInput.nonce}`,
           symbol: `DCO2`,
           image: `${process.env.ENDPOINT_IPFS_NFT_IMAGE}`,
           attributes: [
