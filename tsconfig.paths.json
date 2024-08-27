@@ -37,6 +37,9 @@
       ],
       "@entities/*": [
         "src/entities/*"
+      ],
+      "@contracts/*": [
+        "src/contracts/*"
       ]
     }
   }

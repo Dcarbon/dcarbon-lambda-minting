@@ -1,6 +1,7 @@
 import { getTokenPrice, health } from '@functions/common';
 import { deviceMinting, minting, triggerMinting } from '@functions/minting';
 import { syncTxHelius } from '@functions/hook';
+import { triggerMintingSqs } from '@functions/trigger';
 import type { AWS } from '@serverless/typescript';
 
 const serverlessConfiguration: AWS = {
@@ -35,6 +36,7 @@ const serverlessConfiguration: AWS = {
       CONTRACT_CARBON_PROGRAM_ID: '${file(./env/env.${opt:stage, "dev"}.json):CONTRACT_CARBON_PROGRAM_ID}',
       AWS_S3_BUCKET_NAME: '${file(./env/env.${opt:stage, "dev"}.json):AWS_S3_BUCKET_NAME}',
       AWS_S3_BUCKET_URL: '${file(./env/env.${opt:stage, "dev"}.json):AWS_S3_BUCKET_URL}',
+      AWS_SQS_LAMBDA_MINTING_ARN: '${file(./env/env.${opt:stage, "dev"}.json):AWS_SQS_LAMBDA_MINTING_ARN}',
       EIP_712_DOMAIN_NAME: '${file(./env/env.${opt:stage, "dev"}.json):EIP_712_DOMAIN_NAME}',
       EIP_712_DOMAIN_CHAIN_ID: '${file(./env/env.${opt:stage, "dev"}.json):EIP_712_DOMAIN_CHAIN_ID}',
       EIP_712_DOMAIN_VERIFYING_CONTRACT:
@@ -65,6 +67,7 @@ const serverlessConfiguration: AWS = {
     triggerMinting,
     syncTxHelius,
     getTokenPrice,
+    triggerMintingSqs,
   },
   package: { individually: true },
   custom: {

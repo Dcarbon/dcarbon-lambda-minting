@@ -61,6 +61,34 @@ class ServiceResponse<T, C = any> {
   paging?: PagingResponse;
 }
 
+interface ILambdaSqsTriggerEvent {
+  messageId: string;
+
+  receiptHandle: string;
+
+  body: string;
+
+  attributes: {
+    ApproximateReceiveCount: string;
+    SentTimestamp: string;
+    SequenceNumber: string;
+    MessageGroupId: string;
+    SenderId: string;
+    MessageDeduplicationId: string;
+    ApproximateFirstReceiveTimestamp: string;
+  };
+
+  messageAttributes: string;
+
+  md5OfBody: string;
+
+  eventSource: 'aws:sqs';
+
+  eventSourceARN: string;
+
+  awsRegion: string;
+}
+
 export {
   ICommonRequest,
   IPythTokenPrice,
@@ -70,4 +98,5 @@ export {
   PostRequestOption,
   ServiceResponse,
   PagingResponse,
+  ILambdaSqsTriggerEvent,
 };

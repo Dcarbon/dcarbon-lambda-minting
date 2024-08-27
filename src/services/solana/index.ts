@@ -19,16 +19,16 @@ import Arweave from '@services/arweave';
 import MyError from '@exceptions/my_error.exception';
 import { EHttpStatus } from '@enums/http.enum';
 import { ERROR_CODE } from '@constants/error.constant';
-import { ICarbonContract } from '../../contracts/carbon/carbon.interface';
-import { CARBON_IDL } from '../../contracts/carbon/carbon.idl';
 import {
   ICreateMetadataInput,
   IIotSignatureInput,
   OCContractSetting,
   OCDeviceSetting,
   SignatureVerifyInfo,
-} from '../../interfaces/minting';
-import { IPythTokenPrice, TTokenPythPrice } from '../../interfaces/commons';
+} from '@interfaces/minting';
+import { IPythTokenPrice, TTokenPythPrice } from '@interfaces/commons';
+import { ICarbonContract } from '@contracts/carbon/carbon.interface';
+import { CARBON_IDL } from '@contracts/carbon/carbon.idl';
 
 type MintSftArgs = IdlTypes<ICarbonContract>['mintSftArgs'];
 type VerifyMessageArgs = IdlTypes<ICarbonContract>['verifyMessageArgs'];
