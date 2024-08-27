@@ -30,6 +30,7 @@ const sendTx = async ({
   status: 'success' | 'error' | 'reject';
   tx?: string;
 }> => {
+  LoggerUtil.process('Sending tx');
   let tx: string | undefined;
   if (!txInstructions && (!arrTxInstructions || arrTxInstructions.length === 0)) {
     return {
@@ -61,6 +62,7 @@ const sendTx = async ({
     const numTry = 30;
     let isShoError = false;
     for (let i = 0; i < numTry; i++) {
+      LoggerUtil.warning(`Retrying [${numTry}] send tx`);
       // check transaction TTL
       const blockHeightLoop = await connection.getBlockHeight('confirmed');
       if (blockHeightLoop >= transactionTTL) {
@@ -99,11 +101,13 @@ const sendTx = async ({
 
       await waitToRetry();
     }
+    LoggerUtil.success(`Sent tx [${tx}]`);
     return {
       status: 'success',
       tx,
     };
   } catch (e: any) {
+    LoggerUtil.error('Sending tx has error: ' + e.message);
     if (e.message === 'User rejected the request.') {
       return {
         status: 'reject',

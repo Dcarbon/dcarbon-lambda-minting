@@ -356,6 +356,7 @@ class SolanaService {
     if (status === 'error') {
       throw new Error(tx);
     }
+    LoggerUtil.success(`Minting [${amount}] sFT of device [${deviceId}] with nonce ${signatureInput.nonce}`);
     return {
       connection: this.connection,
       signature: tx,

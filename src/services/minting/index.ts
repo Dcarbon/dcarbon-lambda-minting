@@ -125,14 +125,10 @@ class MintingService {
         // eslint-disable-next-line @typescript-eslint/no-loop-func
         splitMintingDevices[i].map(async (device) => {
           try {
-            const { errorSyncTx, connection: mintConnection } = await this.deviceMinting(
-              minterKeypair,
-              device,
-              project,
-            );
+            const mintResult = await this.deviceMinting(minterKeypair, device, project);
             successDevices.push(device);
-            if (errorSyncTx) errorSyncTxs.push(errorSyncTx);
-            if (!connection) connection = mintConnection;
+            if (mintResult?.errorSyncTx) errorSyncTxs.push(mintResult.errorSyncTx);
+            if (!connection && mintResult?.connection) connection = mintResult.connection;
           } catch (e) {
             errorDevices.push(device);
             loggerUtil.error(`Minting device ${device} has error: ${e.stack}`);
@@ -240,6 +236,7 @@ class MintingService {
         errorSyncTx = signature;
         LoggerUtil.error(`Cannot sync minting tx [${signature}]: ${e.stack}`);
       }
+      LoggerUtil.success(`Minting device ${deviceId} of project ${project.id}`);
       return {
         errorSyncTx,
         connection,
