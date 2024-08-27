@@ -82,4 +82,8 @@ const IOT_PROJECT_TYPE: IIotProjectType[] = [
     active: true,
   },
 ];
-export { IOT_DEVICE_TYPE, IOT_API, IOT_PROJECT_TYPE };
+const IOT_DEFAULT_PAGING = {
+  skip: 0,
+  limit: 12,
+};
+export { IOT_DEVICE_TYPE, IOT_API, IOT_PROJECT_TYPE, IOT_DEFAULT_PAGING };

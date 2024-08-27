@@ -9,8 +9,19 @@ class TriggerHandler {
     request: ILambdaTriggerEvent<ILambdaSqsTriggerEvent>,
     context: ILambdaContext,
   ): Promise<TCommonAPIGatewayProxyResult<any>> {
-    LoggerUtil.info(`[SQS TRIGGER] [MINTING] with params [${JSON.stringify(request)}]`);
-    await MintingService.triggerMinting(request.Records);
+    LoggerUtil.info(`[SQS TRIGGER] [SCHEDULE MINTING] with params [${JSON.stringify(request)}]`);
+    await MintingService.triggerScheduleMinting(request.Records);
+    return CommonJsonResponse<any>({
+      request_id: context.awsRequestId,
+    });
+  }
+
+  static async triggerProjectMinting(
+    request: ILambdaTriggerEvent<ILambdaSqsTriggerEvent>,
+    context: ILambdaContext,
+  ): Promise<TCommonAPIGatewayProxyResult<any>> {
+    LoggerUtil.info(`[SQS TRIGGER] [PROJECT MINTING] with params [${JSON.stringify(request)}]`);
+    await MintingService.triggerProjectMinting(request.Records);
     return CommonJsonResponse<any>({
       request_id: context.awsRequestId,
     });
@@ -18,3 +29,4 @@ class TriggerHandler {
 }
 
 export const TriggerMintingFn = TriggerHandler.triggerMinting;
+export const TriggerProjectMintingFn = TriggerHandler.triggerProjectMinting;

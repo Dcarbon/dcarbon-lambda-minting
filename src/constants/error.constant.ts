@@ -25,6 +25,10 @@ const ERROR_CODE = {
   IOT_OP: {
     SIGN_NOT_FOUND: { code: 'ERROR5_001', msg: 'Sign not found' },
   },
+  CONFIG: {
+    MINTING_SIGNER_NOT_FOUND: { code: 'ERROR6_001', msg: 'Minting signer not found' },
+    MINTER_BALANCE_TO_LOW: { code: 'ERROR6_002', msg: 'Minter balance to low' },
+  },
 };
 
 export { ERROR_CODE, COMMON_ERROR_CODE };

@@ -1,7 +1,7 @@
 import { getTokenPrice, health } from '@functions/common';
-import { deviceMinting, minting, triggerMinting } from '@functions/minting';
+import { deviceMinting, minting, triggerMinting, triggerProjectMinting } from '@functions/minting';
 import { syncTxHelius } from '@functions/hook';
-import { triggerMintingSqs } from '@functions/trigger';
+import { triggerMintingSqs, triggerProjectMintingSqs } from '@functions/trigger';
 import type { AWS } from '@serverless/typescript';
 
 const serverlessConfiguration: AWS = {
@@ -36,7 +36,12 @@ const serverlessConfiguration: AWS = {
       CONTRACT_CARBON_PROGRAM_ID: '${file(./env/env.${opt:stage, "dev"}.json):CONTRACT_CARBON_PROGRAM_ID}',
       AWS_S3_BUCKET_NAME: '${file(./env/env.${opt:stage, "dev"}.json):AWS_S3_BUCKET_NAME}',
       AWS_S3_BUCKET_URL: '${file(./env/env.${opt:stage, "dev"}.json):AWS_S3_BUCKET_URL}',
-      AWS_SQS_LAMBDA_MINTING_ARN: '${file(./env/env.${opt:stage, "dev"}.json):AWS_SQS_LAMBDA_MINTING_ARN}',
+      AWS_SQS_LAMBDA_SCHEDULE_MINTING_ARN:
+        '${file(./env/env.${opt:stage, "dev"}.json):AWS_SQS_LAMBDA_SCHEDULE_MINTING_ARN}',
+      AWS_SQS_LAMBDA_PROJECT_MINTING_ARN:
+        '${file(./env/env.${opt:stage, "dev"}.json):AWS_SQS_LAMBDA_PROJECT_MINTING_ARN}',
+      AWS_SQS_LAMBDA_PROJECT_MINTING_URL:
+        '${file(./env/env.${opt:stage, "dev"}.json):AWS_SQS_LAMBDA_PROJECT_MINTING_URL}',
       EIP_712_DOMAIN_NAME: '${file(./env/env.${opt:stage, "dev"}.json):EIP_712_DOMAIN_NAME}',
       EIP_712_DOMAIN_CHAIN_ID: '${file(./env/env.${opt:stage, "dev"}.json):EIP_712_DOMAIN_CHAIN_ID}',
       EIP_712_DOMAIN_VERIFYING_CONTRACT:
@@ -65,9 +70,11 @@ const serverlessConfiguration: AWS = {
     minting,
     deviceMinting,
     triggerMinting,
+    triggerProjectMinting,
     syncTxHelius,
     getTokenPrice,
     triggerMintingSqs,
+    triggerProjectMintingSqs,
   },
   package: { individually: true },
   custom: {

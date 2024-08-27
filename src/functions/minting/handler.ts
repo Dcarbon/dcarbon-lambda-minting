@@ -26,7 +26,18 @@ class MintingHandler {
     request: ITriggerMintingInput,
     context: ILambdaContext,
   ): Promise<TCommonAPIGatewayProxyResult<any>> {
-    await MintingService.triggerMinting(request.body.records);
+    await MintingService.triggerScheduleMinting(request.body.records);
+    return CommonJsonResponse<any>({
+      request_id: context.awsRequestId,
+    });
+  }
+
+  @RequestLogger()
+  static async triggerProjectMinting(
+    request: ITriggerMintingInput,
+    context: ILambdaContext,
+  ): Promise<TCommonAPIGatewayProxyResult<any>> {
+    await MintingService.triggerProjectMinting(request.body.records);
     return CommonJsonResponse<any>({
       request_id: context.awsRequestId,
     });
@@ -47,3 +58,4 @@ class MintingHandler {
 export const MintingFn = middyfy(MintingHandler.minting);
 export const DeviceMintingFn = middyfy(MintingHandler.deviceMinting);
 export const TriggerMintingFn = middyfy(MintingHandler.triggerMinting);
+export const TriggerProjectMintingFn = middyfy(MintingHandler.triggerProjectMinting);

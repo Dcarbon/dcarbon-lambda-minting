@@ -1,7 +1,13 @@
 import { ServiceResponse } from '@interfaces/commons';
-import { IotProject, IotSign } from '@services/dcarbon/dcarbon.interface';
+import {
+  IIotDevicesQuery,
+  IotCommonResponse,
+  IotDevice,
+  IotProject,
+  IotSign,
+} from '@services/dcarbon/dcarbon.interface';
 import Api from '@services/api';
-import { IOT_API } from '@constants/iot.constant';
+import { IOT_API, IOT_DEFAULT_PAGING } from '@constants/iot.constant';
 import MyError from '@exceptions/my_error.exception';
 import { EHttpStatus } from '@enums/http.enum';
 import { ERROR_CODE } from '@constants/error.constant';
@@ -40,6 +46,25 @@ class DCarbonService {
       );
     return {
       data: result,
+    };
+  }
+
+  async getDevices(query: IIotDevicesQuery): Promise<ServiceResponse<IotDevice[]>> {
+    const result = await Api.get<IIotDevicesQuery, IotCommonResponse<IotDevice[]>>({
+      url: `${this.ENDPOINT_IOT_API}${IOT_API.DEVICE.ROOT}`,
+      cls: IotCommonResponse<IotDevice[]>,
+      plainToClass: true,
+      byPassError: true,
+      query,
+      type: 'iot_api',
+    });
+    return {
+      data: result.data || [],
+      paging: {
+        total: Number(result?.total || 0),
+        page: Math.floor((query?.skip || IOT_DEFAULT_PAGING.skip) / (query?.limit || IOT_DEFAULT_PAGING.limit)) + 1,
+        limit: query?.limit || IOT_DEFAULT_PAGING.limit,
+      },
     };
   }
 }

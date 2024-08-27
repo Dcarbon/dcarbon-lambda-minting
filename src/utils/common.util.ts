@@ -1,5 +1,5 @@
 class CommonUtil {
-  public splitArray(arr: any[], len: number): any[][] {
+  public splitArray<T = any>(arr: any[], len: number): T[][] {
     return arr.reduce((resultArray, item, index) => {
       const chunkIndex = Math.floor(index / len);
 
@@ -10,7 +10,7 @@ class CommonUtil {
       resultArray[chunkIndex].push(item);
 
       return resultArray;
-    }, []);
+    }, []) as T[][];
   }
 }
 

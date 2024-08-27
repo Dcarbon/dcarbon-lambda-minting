@@ -1,5 +1,6 @@
 import { DataSource, EntityManager } from 'typeorm';
 import LoggerUtil from '@utils/logger.util';
+import { KeypairEntity } from '@entities/keypair.entity';
 import { DeviceTransactionHistoryEntity } from '../entities/device_transaction_history.entity';
 import { MintingScheduleEntity } from '../entities/minting_schedule.entity';
 import { MarketTransactionHistoryEntity } from '../entities/market_history.entity';
@@ -25,6 +26,7 @@ class DatasourceManager {
         MarketTransactionHistoryEntity,
         MintHistoryEntity,
         BurnHistoryEntity,
+        KeypairEntity,
       ],
     });
     try {

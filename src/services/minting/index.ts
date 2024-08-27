@@ -8,28 +8,111 @@ import SolanaService from '@services/solana';
 import LoggerUtil from '@utils/logger.util';
 import { IOT_DEVICE_TYPE, IOT_PROJECT_TYPE } from '@constants/iot.constant';
 import HistoryService from '@services/history';
-import { EDeviceCreditActionType } from '@enums/device.enum';
+import { EDeviceCreditActionType, EIotDeviceType } from '@enums/device.enum';
 import { EMintScheduleType } from '@enums/minting.enum';
 import ConfigService from '@services/config';
 import Dcarbon from '@services/dcarbon';
 import { IIotSignatureInput } from '@interfaces/minting';
 import { ILambdaSqsTriggerEvent } from '@interfaces/commons';
+import Sqs from '@services/aws/sqs';
+import { ISQSProjectMintingInput } from '@services/minting/minting.interface';
+import CommonUtil from '@utils/common.util';
+import { MintingScheduleEntity } from '@entities/minting_schedule.entity';
+import delay from 'delay';
 
 class MintingService {
   private MINT_LOOKUP_TABLE = process.env.COMMON_MINT_LOOKUP_TABLE;
 
-  async triggerMinting(records: ILambdaSqsTriggerEvent[]): Promise<void> {
+  private MINTER_KEYPAIR: Keypair;
+
+  async triggerScheduleMinting(records: ILambdaSqsTriggerEvent[]): Promise<void> {
     const record = records[0];
     const body: { minting_schedule: EMintScheduleType } = JSON.parse(record.body);
     if (body?.minting_schedule) {
+      const minter = await ConfigService.getMintingSigner();
+      const minterBalance = await SolanaService.getBalanceOfWallet(minter.public_key);
+      if (!minterBalance || minterBalance < 0.5)
+        throw new MyError(
+          EHttpStatus.InternalServerError,
+          ERROR_CODE.CONFIG.MINTER_BALANCE_TO_LOW.code,
+          ERROR_CODE.CONFIG.MINTER_BALANCE_TO_LOW.msg,
+        );
       const scheduleType = body.minting_schedule;
       LoggerUtil.process(`Trigger minting [${scheduleType.toUpperCase()}]`);
       const schedules = await ConfigService.getMintingSchedule({ schedule_type: scheduleType });
       if (schedules.length > 0) {
         LoggerUtil.info(`Project minting: ${JSON.stringify(schedules.map((info) => info.project_id))}`);
+        const errors = [];
+        const splitArr = CommonUtil.splitArray<MintingScheduleEntity>(schedules, 20);
+        const queue = process.env.AWS_SQS_LAMBDA_PROJECT_MINTING_URL as string;
+        const msgGroupId = `${process.env.STAGE}_PROJECT_MINTING`;
+        for (let i = 0; i < splitArr.length; i++) {
+          await Promise.all(
+            splitArr[i].map(async (schedule) => {
+              try {
+                await Sqs.createSQS<ISQSProjectMintingInput>(
+                  {
+                    queue_url: queue,
+                    message_group_id: msgGroupId,
+                    message_deduplication_id: schedule.project_id,
+                    message_body: {
+                      project_id: schedule.project_id,
+                    },
+                  },
+                  true,
+                );
+              } catch (e) {
+                errors.push(schedule.project_id);
+              }
+            }),
+          );
+        }
+        if (errors.length > 0) {
+          LoggerUtil.error(`Cannot create minting schedule for projects: ${JSON.stringify(errors)}`);
+        }
       }
       LoggerUtil.success(`Trigger minting [${scheduleType.toUpperCase()}]`);
     }
+  }
+
+  async triggerProjectMinting(records: ILambdaSqsTriggerEvent[]): Promise<void> {
+    const record = records[0];
+    const body: { project_id: string } = JSON.parse(record.body);
+    if (body?.project_id) {
+      await this.projectMinting(body.project_id);
+    }
+  }
+
+  async projectMinting(projectId: string): Promise<void> {
+    await delay(20000);
+    const minter = await ConfigService.getMintingSigner();
+    const minterBalance = await SolanaService.getBalanceOfWallet(minter.public_key);
+    if (!minterBalance || minterBalance < 0.5)
+      throw new MyError(
+        EHttpStatus.InternalServerError,
+        ERROR_CODE.CONFIG.MINTER_BALANCE_TO_LOW.code,
+        ERROR_CODE.CONFIG.MINTER_BALANCE_TO_LOW.msg,
+      );
+    let minterKeypair = this.MINTER_KEYPAIR;
+    if (!minterKeypair) {
+      minterKeypair = await this.getSignerKeypair(minter.aws_sm_key);
+      this.MINTER_KEYPAIR = minterKeypair;
+    }
+    const [devicesRegistered, { data: dcarbonDevices }] = await Promise.all([
+      SolanaService.getDevicesRegisteredOfProject(projectId),
+      Dcarbon.getDevices({
+        projectId: projectId,
+        status: -1,
+        type: EIotDeviceType.ALL,
+        limit: 99999,
+      }),
+    ]);
+    const mintingDevices: string[] = [];
+    devicesRegistered.forEach((id) => {
+      const match = dcarbonDevices.find((device) => device.id === String(id));
+      if (match) mintingDevices.push(String(id));
+    });
+    LoggerUtil.info('mintingDevices ' + projectId + ' ' + JSON.stringify(mintingDevices));
   }
 
   async deviceMinting(deviceId: string, projectId: string): Promise<void> {

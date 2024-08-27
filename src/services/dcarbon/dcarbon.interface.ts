@@ -1,3 +1,10 @@
+import { EIotDeviceType } from '@enums/device.enum';
+
+interface IIotCommonQuery {
+  skip?: number;
+  limit?: number;
+}
+
 class IotProject {
   id: string;
 
@@ -110,4 +117,13 @@ class IotSign {
   iot: string;
 }
 
-export { IotProject, IotCommonResponse, IotDevice, IotSign };
+interface IIotDevicesQuery extends IIotCommonQuery {
+  projectId?: string;
+  status?: number;
+  type?: EIotDeviceType;
+  isPanel?: boolean;
+  typeGetByProject?: 0 | 1;
+  searchValue?: string;
+}
+
+export { IotProject, IotCommonResponse, IotDevice, IotSign, IIotDevicesQuery };

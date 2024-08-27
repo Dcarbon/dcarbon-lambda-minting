@@ -124,6 +124,38 @@
         }
       }
     },
+    "/v1/minting/trigger-project-minting": {
+      "post": {
+        "summary": "Trigger Minting Carbon",
+        "description": "",
+        "tags": [
+          "MINTING"
+        ],
+        "operationId": "triggerProjectMinting.post./v1/minting/trigger-project-minting",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Body required in the request",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ITriggerMintingBody"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200 response"
+          }
+        }
+      }
+    },
     "/v1/common/hook/helius": {
       "post": {
         "summary": "Helius hook",

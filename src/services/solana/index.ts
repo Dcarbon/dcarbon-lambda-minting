@@ -1,5 +1,6 @@
 import { AddressLookupTableProgram, Connection, Keypair, PublicKey, SYSVAR_INSTRUCTIONS_PUBKEY } from '@solana/web3.js';
 import { BN, IdlTypes, Program, web3 } from '@coral-xyz/anchor';
+import bs58 from 'bs58';
 import {
   CreateArgsArgs,
   getCreateArgsSerializer,
@@ -56,6 +57,10 @@ class SolanaService {
     this.TOKEN_METADATA_PROGRAM_ID = new PublicKey(MPL_TOKEN_METADATA_PROGRAM_ID.toString());
     this.pythConnection = new Connection(getPythClusterApiUrl('pythnet'));
     this.pythPublicKey = getPythProgramKeyForCluster('pythnet');
+  }
+
+  async getBalanceOfWallet(wallet: string): Promise<number> {
+    return await this.connection.getBalance(new PublicKey(wallet));
   }
 
   async contractSetting(): Promise<OCContractSetting> {
@@ -480,6 +485,36 @@ class SolanaService {
       if (strPrice) prices = JSON.parse(strPrice) as IPythTokenPrice[];
     }
     return prices;
+  }
+
+  async getDevicesRegisteredOfProject(projectId: string): Promise<number[]> {
+    const accounts = await this.connection.getProgramAccounts(this.program.programId, {
+      filters: [
+        {
+          memcmp: {
+            offset: 0,
+            bytes: bs58.encode(
+              CARBON_IDL?.accounts.find((acc: { name: string; discriminator: number[] }) => acc.name === 'Device')
+                ?.discriminator as number[],
+            ),
+          },
+        },
+        {
+          memcmp: {
+            offset: 8 + 2 + 2,
+            bytes: bs58.encode(u16ToBytes(Number(projectId))),
+          },
+        },
+      ],
+    });
+    const devicesRegistered: number[] = [];
+    accounts?.forEach((data) => {
+      if (data.account.data) {
+        const deviceId = data.account.data.subarray(8, 8 + 2).readInt16LE();
+        devicesRegistered.push(deviceId);
+      }
+    });
+    return devicesRegistered;
   }
 }
 

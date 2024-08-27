@@ -44,3 +44,18 @@ export const triggerMinting = {
     },
   ],
 };
+
+export const triggerProjectMinting = {
+  handler: `${handlerPath(__dirname)}/handler.TriggerProjectMintingFn`,
+  events: [
+    {
+      httpApi: {
+        method: 'post',
+        path: `${PREFIX}/trigger-project-minting`,
+        summary: 'Trigger Minting Carbon',
+        swaggerTags: ['MINTING'],
+        bodyType: 'ITriggerMintingBody',
+      },
+    },
+  ],
+};
