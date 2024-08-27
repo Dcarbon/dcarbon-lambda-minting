@@ -9,8 +9,8 @@ import LoggerUtil from '@utils/logger.util';
 import { IOT_DEVICE_TYPE, IOT_PROJECT_TYPE } from '@constants/iot.constant';
 import HistoryService from '@services/history';
 import { EDeviceCreditActionType } from '@enums/device.enum';
-// import { EMintScheduleType } from '@enums/minting.enum';
-// import ConfigService from '@services/config';
+import { EMintScheduleType } from '@enums/minting.enum';
+import ConfigService from '@services/config';
 import Dcarbon from '@services/dcarbon';
 import { IIotSignatureInput } from '@interfaces/minting';
 import { ILambdaSqsTriggerEvent } from '@interfaces/commons';
@@ -19,13 +19,17 @@ class MintingService {
   private MINT_LOOKUP_TABLE = process.env.COMMON_MINT_LOOKUP_TABLE;
 
   async triggerMinting(records: ILambdaSqsTriggerEvent[]): Promise<void> {
-    LoggerUtil.info('records ' + JSON.stringify(records));
-    // LoggerUtil.process(`Trigger minting [${scheduleType.toUpperCase()}]`);
-    // const schedules = await ConfigService.getMintingSchedule({ schedule_type: scheduleType });
-    // if (schedules.length > 0) {
-    //   LoggerUtil.info(`Project minting: ${JSON.stringify(schedules.map((info) => info.project_id))}`);
-    // }
-    // LoggerUtil.success(`Trigger minting [${scheduleType.toUpperCase()}]`);
+    const record = records[0];
+    const body: { minting_schedule: EMintScheduleType } = JSON.parse(record.body);
+    if (body?.minting_schedule) {
+      const scheduleType = body.minting_schedule;
+      LoggerUtil.process(`Trigger minting [${scheduleType.toUpperCase()}]`);
+      const schedules = await ConfigService.getMintingSchedule({ schedule_type: scheduleType });
+      if (schedules.length > 0) {
+        LoggerUtil.info(`Project minting: ${JSON.stringify(schedules.map((info) => info.project_id))}`);
+      }
+      LoggerUtil.success(`Trigger minting [${scheduleType.toUpperCase()}]`);
+    }
   }
 
   async deviceMinting(deviceId: string, projectId: string): Promise<void> {

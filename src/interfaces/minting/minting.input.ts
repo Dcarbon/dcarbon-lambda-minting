@@ -1,5 +1,4 @@
-import { EMintScheduleType } from '@enums/minting.enum';
-import { ICommonRequest } from '../commons';
+import { ICommonRequest, ILambdaSqsTriggerEvent } from '../commons';
 
 interface IMintingInput extends ICommonRequest {
   body: {
@@ -13,7 +12,7 @@ interface IMintingInput extends ICommonRequest {
 
 interface ITriggerMintingInput extends ICommonRequest {
   body: {
-    minting_schedule: EMintScheduleType;
+    records: ILambdaSqsTriggerEvent[];
   };
 }
 

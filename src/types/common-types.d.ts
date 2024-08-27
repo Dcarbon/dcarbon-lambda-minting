@@ -22,5 +22,5 @@ export interface IDeviceMintingBody {
 type TMintScheduleType = Record<EMintScheduleType, string>;
 
 export interface ITriggerMintingBody {
-  minting_schedule: TMintScheduleType;
+  records: any[];
 }

@@ -249,20 +249,20 @@
     },
     "ITriggerMintingBody": {
       "properties": {
-        "minting_schedule": {
-          "$ref": "#/definitions/TMintScheduleType",
-          "title": "ITriggerMintingBody.minting_schedule"
+        "records": {
+          "items": {
+            "title": "ITriggerMintingBody.records.[]"
+          },
+          "title": "ITriggerMintingBody.records",
+          "type": "array"
         }
       },
       "required": [
-        "minting_schedule"
+        "records"
       ],
       "additionalProperties": false,
       "title": "ITriggerMintingBody",
       "type": "object"
-    },
-    "TMintScheduleType": {
-      "title": "TMintScheduleType"
     }
   },
   "securityDefinitions": {},
