@@ -20,6 +20,7 @@ import CommonUtil from '@utils/common.util';
 import { MintingScheduleEntity } from '@entities/minting_schedule.entity';
 import { IotProject } from '@services/dcarbon/dcarbon.interface';
 import loggerUtil from '@utils/logger.util';
+import Notification from '@services/notification';
 
 class MintingService {
   private MINT_LOOKUP_TABLE = process.env.COMMON_MINT_LOOKUP_TABLE;
@@ -28,73 +29,96 @@ class MintingService {
 
   private MINTING_BATCH_SIZE = 4;
 
-  async triggerScheduleMinting(records: ILambdaSqsTriggerEvent[]): Promise<void> {
+  async triggerScheduleMinting(requestId: string, records: ILambdaSqsTriggerEvent[]): Promise<void> {
     const record = records[0];
     const body: { minting_schedule: EMintScheduleType } = JSON.parse(record.body);
-    if (body?.minting_schedule) {
-      const minter = await ConfigService.getMintingSigner();
-      const minterBalance = await SolanaService.getBalanceOfWallet(minter.public_key);
-      if (!minterBalance || minterBalance < 0.5)
-        throw new MyError(
-          EHttpStatus.InternalServerError,
-          ERROR_CODE.CONFIG.MINTER_BALANCE_TO_LOW.code,
-          ERROR_CODE.CONFIG.MINTER_BALANCE_TO_LOW.msg,
-        );
-      const scheduleType = body.minting_schedule;
-      LoggerUtil.process(`Trigger minting [${scheduleType.toUpperCase()}]`);
-      const schedules = await ConfigService.getMintingSchedule({ schedule_type: scheduleType });
-      if (schedules.length > 0) {
-        LoggerUtil.info(`Project minting: ${JSON.stringify(schedules.map((info) => info.project_id))}`);
-        const errors = [];
-        const splitArr = CommonUtil.splitArray<MintingScheduleEntity>(schedules, 20);
-        const queue = process.env.AWS_SQS_LAMBDA_PROJECT_MINTING_URL as string;
-        const msgGroupId = `${process.env.STAGE}_PROJECT_MINTING`;
-        for (let i = 0; i < splitArr.length; i++) {
-          await Promise.all(
-            splitArr[i].map(async (schedule) => {
-              try {
-                await Sqs.createSQS<ISQSProjectMintingInput>(
-                  {
-                    queue_url: queue,
-                    message_group_id: msgGroupId,
-                    message_deduplication_id: schedule.project_id,
-                    message_body: {
-                      project_id: schedule.project_id,
+    const scheduleType = body?.minting_schedule;
+    try {
+      if (body?.minting_schedule) {
+        const minter = await ConfigService.getMintingSigner();
+        const minterBalance = await SolanaService.getBalanceOfWallet(minter.aws_sm_key);
+        if (!minterBalance || minterBalance < 0.5) {
+          await Notification.minterBalanceLow(requestId, scheduleType, minterBalance);
+          LoggerUtil.error(ERROR_CODE.CONFIG.MINTER_BALANCE_TO_LOW.msg);
+          return;
+        }
+        LoggerUtil.process(`Trigger minting [${scheduleType.toUpperCase()}]`);
+        const schedules = await ConfigService.getMintingSchedule({ schedule_type: scheduleType });
+        if (schedules.length > 0) {
+          LoggerUtil.info(`Project minting: ${JSON.stringify(schedules.map((info) => info.project_id))}`);
+          const errors: string[] = [];
+          const success: string[] = [];
+          const splitArr = CommonUtil.splitArray<MintingScheduleEntity>(schedules, 20);
+          const queue = process.env.AWS_SQS_LAMBDA_PROJECT_MINTING_URL as string;
+          const msgGroupId = `${process.env.STAGE}_PROJECT_MINTING`;
+          for (let i = 0; i < splitArr.length; i++) {
+            await Promise.all(
+              splitArr[i].map(async (schedule) => {
+                try {
+                  await Sqs.createSQS<ISQSProjectMintingInput>(
+                    {
+                      queue_url: queue,
+                      message_group_id: msgGroupId,
+                      message_deduplication_id: schedule.project_id,
+                      message_body: {
+                        project_id: schedule.project_id,
+                      },
                     },
-                  },
-                  true,
-                );
-              } catch (e) {
-                errors.push(schedule.project_id);
-              }
-            }),
-          );
+                    true,
+                  );
+                  success.push(schedule.project_id);
+                } catch (e) {
+                  errors.push(schedule.project_id);
+                }
+              }),
+            );
+          }
+          if (errors.length > 0) {
+            LoggerUtil.error(`Cannot create minting schedule for projects: ${JSON.stringify(errors)}`);
+            await Notification.scheduleProjectMintingError(requestId, scheduleType, errors);
+          }
+          if (success.length > 0) {
+            LoggerUtil.success(`Schedule projects success [${JSON.stringify(success)}]`);
+            await Notification.scheduleProjectMintingSuccess(requestId, scheduleType, success);
+          }
+        } else {
+          await Notification.warningMinting(requestId, `[${scheduleType.toUpperCase()}] NO PROJECTS SCHEDULED`);
         }
-        if (errors.length > 0) {
-          LoggerUtil.error(`Cannot create minting schedule for projects: ${JSON.stringify(errors)}`);
-        }
+        LoggerUtil.success(`Trigger minting [${scheduleType.toUpperCase()}]`);
       }
-      LoggerUtil.success(`Trigger minting [${scheduleType.toUpperCase()}]`);
+    } catch (e) {
+      LoggerUtil.error(e.stack);
+      await Notification.error(
+        requestId,
+        `TRIGGER [${scheduleType?.toUpperCase()}] MINTING ERROR: 
+      
+Error: ${e.message}`,
+      );
     }
   }
 
-  async triggerProjectMinting(records: ILambdaSqsTriggerEvent[]): Promise<void> {
+  async triggerProjectMinting(requestId: string, records: ILambdaSqsTriggerEvent[]): Promise<void> {
     const record = records[0];
     const body: { project_id: string } = JSON.parse(record.body);
     if (body?.project_id) {
-      await this.projectMinting(body.project_id);
+      try {
+        await this.projectMinting(requestId, body.project_id);
+      } catch (e) {
+        LoggerUtil.error(e.stack);
+        await Notification.error(
+          requestId,
+          `MINTING - PROJECT MINTING ERROR:
+        
+Project ID: ${body?.project_id}
+Error: ${e.message}`,
+        );
+      }
     }
   }
 
-  async projectMinting(projectId: string): Promise<void> {
+  async projectMinting(requestId: string, projectId: string): Promise<void> {
+    LoggerUtil.process(`Minting project [${projectId}]`);
     const minter = await ConfigService.getMintingSigner();
-    const minterBalance = await SolanaService.getBalanceOfWallet(minter.public_key);
-    if (!minterBalance || minterBalance < 0.5)
-      throw new MyError(
-        EHttpStatus.InternalServerError,
-        ERROR_CODE.CONFIG.MINTER_BALANCE_TO_LOW.code,
-        ERROR_CODE.CONFIG.MINTER_BALANCE_TO_LOW.msg,
-      );
     let minterKeypair = this.MINTER_KEYPAIR;
     if (!minterKeypair) {
       minterKeypair = await this.getSignerKeypair(minter.aws_sm_key);
@@ -119,6 +143,7 @@ class MintingService {
     const errorDevices = [];
     const successDevices = [];
     const errorSyncTxs: string[] = [];
+    const invalidNonceDevices: string[] = [];
     let connection: Connection;
     for (let i = 0; i < splitMintingDevices.length; i++) {
       await Promise.all(
@@ -127,13 +152,23 @@ class MintingService {
           try {
             const mintResult = await this.deviceMinting(minterKeypair, device, project);
             successDevices.push(device);
+            if (mintResult?.invalidNonce) invalidNonceDevices.push(device);
             if (mintResult?.errorSyncTx) errorSyncTxs.push(mintResult.errorSyncTx);
             if (!connection && mintResult?.connection) connection = mintResult.connection;
           } catch (e) {
             errorDevices.push(device);
-            loggerUtil.error(`Minting device ${device} has error: ${e.stack}`);
+            loggerUtil.error(`Minting device [${device}] of project [${projectId}] has error: ${e.stack}`);
           }
         }),
+      );
+    }
+    if (invalidNonceDevices.length > 0) {
+      await Notification.warningMinting(
+        requestId,
+        `MINTING - INVALID NONCE:
+        
+Project ID: ${projectId}
+Device IDs: ${JSON.stringify(invalidNonceDevices)}`,
       );
     }
     if (errorSyncTxs.length > 0) {
@@ -150,14 +185,28 @@ class MintingService {
       );
       if (errorSyncTxs2rd.length > 0) {
         LoggerUtil.error(`[FINISHED] Cannot sync 2rd minting txs [${JSON.stringify(errorSyncTxs2rd)}]`);
-        // FIXME: Push telegram notification
+        await Notification.error(
+          requestId,
+          `MINTING - CAN NOT SYNC MINT TRANSACTION:
+        
+Project ID: ${projectId}
+Transactions: ${JSON.stringify(errorSyncTxs2rd)}`,
+        );
       }
     }
     if (errorDevices.length > 0) {
-      LoggerUtil.error(`[FINISHED] Minting devices [${JSON.stringify(errorDevices)}] has error`);
-      // FIXME: Push telegram notification
+      LoggerUtil.error(
+        `[FINISHED] Minting devices ${JSON.stringify(errorDevices)} of project [${projectId}] has error`,
+      );
+      await Notification.error(
+        requestId,
+        `MINTING - CAN SEND MINT TRANSACTION:
+        
+Project ID: ${projectId}
+Device IDs: ${JSON.stringify(errorDevices)}`,
+      );
     }
-    LoggerUtil.info('mintingDevices ' + projectId + ' ' + JSON.stringify(mintingDevices));
+    LoggerUtil.success(`Minting project [${projectId}]`);
   }
 
   async deviceMinting(
@@ -165,10 +214,11 @@ class MintingService {
     deviceId: string,
     project: IotProject,
   ): Promise<{
-    connection: Connection;
+    connection?: Connection;
     errorSyncTx?: string;
+    invalidNonce?: boolean;
   }> {
-    LoggerUtil.process(`Minting device ${deviceId} of project ${project.id}`);
+    LoggerUtil.process(`Minting device [${deviceId}] of project ${project.id}`);
     let errorSyncTx: string | undefined;
     const [deviceSetting, contractConfig, { data: sign }] = await Promise.all([
       SolanaService.getDeviceSetting(project.id, deviceId),
@@ -181,20 +231,23 @@ class MintingService {
       iot: sign.iot,
       amount: sign.amount,
     };
-    if (!deviceSetting)
-      throw new MyError(
-        EHttpStatus.BadRequest,
-        ERROR_CODE.MINTING.DEVICE_NOT_REGISTER.code,
-        ERROR_CODE.MINTING.DEVICE_NOT_REGISTER.msg,
+    if (!deviceSetting) {
+      LoggerUtil.warning(
+        `Device [${deviceId}] of project [${project.id}] ${ERROR_CODE.MINTING.DEVICE_NOT_REGISTER.msg}`,
       );
-    if (!deviceSetting.is_active || !deviceSetting.device_id) {
+      return;
+    } else if (!deviceSetting.is_active || !deviceSetting.device_id) {
       LoggerUtil.warning(`Device [${deviceId}] of project [${project.id}] inactive`);
+      return;
     } else if (deviceSetting.nonce + 1 !== signatureInput.nonce) {
       LoggerUtil.warning(`Device [${deviceId}] of project [${project.id}] invalid nonce`);
+      return {
+        invalidNonce: true,
+      };
     } else {
       const deviceType = IOT_DEVICE_TYPE.find((type) => type.id === deviceSetting.device_type);
       const projectType = IOT_PROJECT_TYPE.find((info) => info.id === project.type);
-      const { signature, connection, txTime } = await SolanaService.mintDeviceSNFT(
+      const mintResult = await SolanaService.mintDeviceSNFT(
         this.MINT_LOOKUP_TABLE,
         minter,
         {
@@ -230,17 +283,19 @@ class MintingService {
         deviceSetting.owner,
         contractConfig.vault,
       );
-      try {
-        await this.syncMintTransaction(connection, signature, txTime, true);
-      } catch (e) {
-        errorSyncTx = signature;
-        LoggerUtil.error(`Cannot sync minting tx [${signature}]: ${e.stack}`);
+      if (mintResult) {
+        try {
+          await this.syncMintTransaction(mintResult.connection, mintResult.signature, mintResult.txTime, true);
+        } catch (e) {
+          errorSyncTx = mintResult.signature;
+          LoggerUtil.error(`Cannot sync minting tx [${mintResult.signature}]: ${e.stack}`);
+        }
+        LoggerUtil.success(`Minting device ${deviceId} of project ${project.id}`);
+        return {
+          errorSyncTx,
+          connection: mintResult.connection,
+        };
       }
-      LoggerUtil.success(`Minting device ${deviceId} of project ${project.id}`);
-      return {
-        errorSyncTx,
-        connection,
-      };
     }
   }
 

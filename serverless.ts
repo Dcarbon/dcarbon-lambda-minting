@@ -1,5 +1,5 @@
 import { getTokenPrice, health } from '@functions/common';
-import { deviceMinting, minting, triggerMinting, triggerProjectMinting } from '@functions/minting';
+import { minting, triggerMinting, triggerProjectMinting } from '@functions/minting';
 import { syncTxHelius } from '@functions/hook';
 import { triggerMintingSqs, triggerProjectMintingSqs } from '@functions/trigger';
 import type { AWS } from '@serverless/typescript';
@@ -53,6 +53,9 @@ const serverlessConfiguration: AWS = {
       COMMON_MINT_LOOKUP_TABLE: '${file(./env/env.${opt:stage, "dev"}.json):COMMON_MINT_LOOKUP_TABLE}',
       ENDPOINT_IOT_API: '${file(./env/env.${opt:stage, "dev"}.json):ENDPOINT_IOT_API}',
       ENDPOINT_IPFS_NFT_IMAGE: '${file(./env/env.${opt:stage, "dev"}.json):ENDPOINT_IPFS_NFT_IMAGE}',
+      TELEGRAM_BOT_TOKEN: '${file(./env/env.${opt:stage, "dev"}.json):TELEGRAM_BOT_TOKEN}',
+      TELEGRAM_GROUP_ID: '${file(./env/env.${opt:stage, "dev"}.json):TELEGRAM_GROUP_ID}',
+      TELEGRAM_MINTING_ALERT_TOPIC_ID: '${file(./env/env.${opt:stage, "dev"}.json):TELEGRAM_MINTING_ALERT_TOPIC_ID}',
       //SSM
       ENDPOINT_RPC: '${ssm:/dcarbon/${opt:stage, "dev"}/admin-backend/endpoint/endpoint_rpc}',
       POSTGRES_DB_HOST: '${ssm:/dcarbon/${opt:stage, "dev"}/admin-backend/postgres/postgres_db_host}',
@@ -68,7 +71,6 @@ const serverlessConfiguration: AWS = {
   functions: {
     health,
     minting,
-    deviceMinting,
     triggerMinting,
     triggerProjectMinting,
     syncTxHelius,

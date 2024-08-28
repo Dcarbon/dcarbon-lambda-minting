@@ -60,38 +60,6 @@
         }
       }
     },
-    "/v1/minting/device": {
-      "post": {
-        "summary": "Trigger Minting Carbon by Device",
-        "description": "",
-        "tags": [
-          "MINTING"
-        ],
-        "operationId": "deviceMinting.post./v1/minting/device",
-        "consumes": [
-          "application/json"
-        ],
-        "produces": [
-          "application/json"
-        ],
-        "parameters": [
-          {
-            "in": "body",
-            "name": "body",
-            "description": "Body required in the request",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/IDeviceMintingBody"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "200 response"
-          }
-        }
-      }
-    },
     "/v1/minting/trigger": {
       "post": {
         "summary": "Trigger Minting Carbon",

@@ -2,7 +2,7 @@ import { middyfy } from '@libs/lambda';
 import { ILambdaContext } from '@models/commons/ICommon.interface';
 import { CommonJsonResponse, TCommonAPIGatewayProxyResult } from '@libs/api-gateway';
 import MintingService from '@services/minting';
-import { IDeviceMintingInput, IMintingInput, ITriggerMintingInput } from '@interfaces/minting';
+import { IMintingInput, ITriggerMintingInput } from '@interfaces/minting';
 import RequestLogger from '../../commons/decorators/RequestLogger.decorator';
 
 class MintingHandler {
@@ -26,7 +26,7 @@ class MintingHandler {
     request: ITriggerMintingInput,
     context: ILambdaContext,
   ): Promise<TCommonAPIGatewayProxyResult<any>> {
-    await MintingService.triggerScheduleMinting(request.body.records);
+    await MintingService.triggerScheduleMinting(context.awsRequestId, request.body.records);
     return CommonJsonResponse<any>({
       request_id: context.awsRequestId,
     });
@@ -37,25 +37,24 @@ class MintingHandler {
     request: ITriggerMintingInput,
     context: ILambdaContext,
   ): Promise<TCommonAPIGatewayProxyResult<any>> {
-    await MintingService.triggerProjectMinting(request.body.records);
+    await MintingService.triggerProjectMinting(context.awsRequestId, request.body.records);
     return CommonJsonResponse<any>({
       request_id: context.awsRequestId,
     });
   }
 
-  @RequestLogger()
-  static async deviceMinting(
-    request: IDeviceMintingInput,
-    context: ILambdaContext,
-  ): Promise<TCommonAPIGatewayProxyResult<any>> {
-    await MintingService.deviceMinting(String(request.body.device_id), String(request.body.project_id));
-    return CommonJsonResponse<any>({
-      request_id: context.awsRequestId,
-    });
-  }
+  // @RequestLogger()
+  // static async deviceMinting(
+  //   request: IDeviceMintingInput,
+  //   context: ILambdaContext,
+  // ): Promise<TCommonAPIGatewayProxyResult<any>> {
+  //   await MintingService.deviceMinting(String(request.body.device_id), String(request.body.project_id));
+  //   return CommonJsonResponse<any>({
+  //     request_id: context.awsRequestId,
+  //   });
+  // }
 }
 
 export const MintingFn = middyfy(MintingHandler.minting);
-export const DeviceMintingFn = middyfy(MintingHandler.deviceMinting);
 export const TriggerMintingFn = middyfy(MintingHandler.triggerMinting);
 export const TriggerProjectMintingFn = middyfy(MintingHandler.triggerProjectMinting);

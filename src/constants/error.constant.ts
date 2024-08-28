@@ -27,7 +27,7 @@ const ERROR_CODE = {
   },
   CONFIG: {
     MINTING_SIGNER_NOT_FOUND: { code: 'ERROR6_001', msg: 'Minting signer not found' },
-    MINTER_BALANCE_TO_LOW: { code: 'ERROR6_002', msg: 'Minter balance to low' },
+    MINTER_BALANCE_TO_LOW: { code: 'ERROR6_002', msg: 'Minter balance is too low.' },
   },
 };
 
