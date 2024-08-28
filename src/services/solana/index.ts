@@ -30,6 +30,7 @@ import {
 import { IPythTokenPrice, TTokenPythPrice } from '@interfaces/commons';
 import { ICarbonContract } from '@contracts/carbon/carbon.interface';
 import { CARBON_IDL } from '@contracts/carbon/carbon.idl';
+import { Big } from 'big.js';
 
 type MintSftArgs = IdlTypes<ICarbonContract>['mintSftArgs'];
 type VerifyMessageArgs = IdlTypes<ICarbonContract>['verifyMessageArgs'];
@@ -154,7 +155,7 @@ class SolanaService {
     LoggerUtil.info(`Minter balance: ${minterBalance}`);
     const uri = await Arweave.uploadMetadata(JSON.stringify(input), 'application/json');
     const mint = Keypair.generate();
-    const decimals = 1;
+    const decimals = 2;
     const [metadata] = PublicKey.findProgramAddressSync(
       [Buffer.from('metadata'), this.TOKEN_METADATA_PROGRAM_ID.toBuffer(), mint.publicKey.toBuffer()],
       this.TOKEN_METADATA_PROGRAM_ID,
@@ -188,7 +189,7 @@ class SolanaService {
       projectId: Number(projectId),
       deviceId: Number(deviceId),
       createMintDataVec: Buffer.from(data1),
-      totalAmount: amount, // FIXME: hardcode
+      totalAmount: Number(Number(amount).toFixed(2)), // FIXME: hardcode
       nonce: Number(nonce),
     };
 
@@ -260,7 +261,11 @@ class SolanaService {
     collectFee: string,
   ): Promise<{ connection: Connection; signature: string; txTime: number }> {
     const decimals = 2;
-    const amount = Number(Number.parseInt(signatureInput.amount).toFixed(decimals));
+    const amount = Number(
+      Big(Number.parseInt(signatureInput.amount))
+        .div(Big(10 ** 9))
+        .toFixed(decimals),
+    );
     if (amount < 0.01) {
       LoggerUtil.warning(`Device [${deviceId}] of project [${projectId}] not enough amount`);
       return;
@@ -301,7 +306,7 @@ class SolanaService {
       projectId: Number(projectId),
       deviceId: Number(deviceId),
       createMintDataVec: Buffer.from(data1),
-      totalAmount: Number(Number.parseInt(signatureInput.amount).toFixed(decimals)),
+      totalAmount: amount,
       nonce: signatureInput.nonce,
     };
 
