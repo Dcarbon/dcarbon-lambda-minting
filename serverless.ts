@@ -5,7 +5,7 @@ import { triggerMintingSqs, triggerProjectMintingSqs } from '@functions/trigger'
 import type { AWS } from '@serverless/typescript';
 
 const serverlessConfiguration: AWS = {
-  service: 'dcarbon-minting',
+  service: 'market-minting',
   frameworkVersion: '3',
   plugins: ['serverless-auto-swagger', 'serverless-esbuild', 'serverless-offline'],
   provider: {
@@ -57,15 +57,15 @@ const serverlessConfiguration: AWS = {
       TELEGRAM_GROUP_ID: '${file(./env/env.${opt:stage, "dev"}.json):TELEGRAM_GROUP_ID}',
       TELEGRAM_MINTING_ALERT_TOPIC_ID: '${file(./env/env.${opt:stage, "dev"}.json):TELEGRAM_MINTING_ALERT_TOPIC_ID}',
       //SSM
-      ENDPOINT_RPC: '${ssm:/dcarbon/${opt:stage, "dev"}/admin-backend/endpoint/endpoint_rpc}',
-      POSTGRES_DB_HOST: '${ssm:/dcarbon/${opt:stage, "dev"}/admin-backend/postgres/postgres_db_host}',
-      POSTGRES_DB_NAME: '${ssm:/dcarbon/${opt:stage, "dev"}/admin-backend/postgres/postgres_db_name}',
-      POSTGRES_DB_USER: '${ssm:/dcarbon/${opt:stage, "dev"}/admin-backend/postgres/postgres_db_user}',
-      POSTGRES_DB_PASSWORD: '${ssm:/dcarbon/${opt:stage, "dev"}/admin-backend/postgres/postgres_db_password}',
-      COMMON_PYTH_TOKEN_PRICE: '/dcarbon/${opt:stage, "dev"}/admin-backend/common/common_pyth_token_price',
+      ENDPOINT_RPC: '${ssm:/market/${opt:stage, "dev"}/admin-backend/endpoint/endpoint_rpc}',
+      POSTGRES_DB_HOST: '${ssm:/market/${opt:stage, "dev"}/admin-backend/postgres/postgres_db_host}',
+      POSTGRES_DB_NAME: '${ssm:/market/${opt:stage, "dev"}/admin-backend/postgres/postgres_db_name}',
+      POSTGRES_DB_USER: '${ssm:/market/${opt:stage, "dev"}/admin-backend/postgres/postgres_db_user}',
+      POSTGRES_DB_PASSWORD: '${ssm:/market/${opt:stage, "dev"}/admin-backend/postgres/postgres_db_password}',
+      COMMON_PYTH_TOKEN_PRICE: '/market/${opt:stage, "dev"}/admin-backend/common/common_pyth_token_price',
     },
     iam: {
-      role: 'arn:aws:iam::${aws:accountId}:role/dcarbon-${opt:stage, "dev"}-lambda-minting-role',
+      role: 'arn:aws:iam::${aws:accountId}:role/market-${opt:stage, "dev"}-lambda-minting-role',
     },
   },
   functions: {

@@ -46,7 +46,9 @@ class ApiService {
           LoggerUtil.success(`API METHOD [GET] [${option.url}]`);
           resolve(data);
         } catch (e) {
-          LoggerUtil.error(`API METHOD [GET] [${option.url}] HAS ERROR, ${e.message}`);
+          LoggerUtil.error(
+            `API METHOD [GET] [${option.url}] HAS ERROR, ${e.message} ${e.response?.data ? JSON.stringify(e.response?.data) : ''}`,
+          );
           if (id) clearTimeout(id);
           reject(e);
         }

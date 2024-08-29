@@ -13,7 +13,7 @@ class ArweaveService {
   private JWK_CACHE: JWKInterface;
 
   constructor() {
-    this.ARWEAVE_HOST = process.env.STAGE === 'prod' ? 'arweave.net' : 'arweave.dev';
+    this.ARWEAVE_HOST = process.env.STAGE !== 'local' ? 'arweave.net' : 'arweave.dev';
     this.arweave = Arweave.init({
       logging: true,
       timeout: 20000,
@@ -28,7 +28,7 @@ class ArweaveService {
 
   async getJwk(): Promise<JWKInterface> {
     if (this.JWK_CACHE) return this.JWK_CACHE;
-    const jwkSecret = await Secret_manager.getSecret(`dcarbon/${process.env.STAGE}/arweave_secret`);
+    const jwkSecret = await Secret_manager.getSecret(`market/${process.env.STAGE}/arweave_secret`);
     if (!jwkSecret) throw new MyError(EHttpStatus.NotFound, EHttpStatus.NotFound.toString());
     this.JWK_CACHE = JSON.parse(jwkSecret);
     return this.JWK_CACHE;
