@@ -366,7 +366,7 @@ Device IDs: ${JSON.stringify(errorDevices)}`,
   }
 
   async getSignerKeypair(signerPublicKey: string): Promise<Keypair> {
-    const secret = await SecretManagerService.getSecret(`dcarbon/${process.env.STAGE}/mint_signer/${signerPublicKey}`);
+    const secret = await SecretManagerService.getSecret(`market/${process.env.STAGE}/mint_signer/${signerPublicKey}`);
     if (!secret)
       throw new MyError(
         EHttpStatus.BadRequest,
